@@ -22,7 +22,7 @@
     "bin" : [
       "tools/plugin-release"
     ],
-    "require-dev": {
+    "require": {
         "consolidation/robo": "dev-master@dev",
         "patchwork/jsqueeze": "~1.0",
         "natxet/CssMin": "~3.0",
