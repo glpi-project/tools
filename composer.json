@@ -20,7 +20,9 @@
       }
     },
     "bin" : [
-      "tools/plugin-release"
+      "tools/plugin-release",
+      "tools/extract_template.sh",
+      "tools/modify_headers.pl"
     ],
     "require": {
         "consolidation/robo": "dev-master@dev",

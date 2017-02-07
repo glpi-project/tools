@@ -68,7 +68,7 @@ class RoboFile extends \Robo\Tasks
     * @return void
     */
    public function localesExtract() {
-      $this->_exec('tools/extract_template.sh');
+      $this->_exec('./vendor/bin/extract_template.sh');
       return $this;
    }
 
@@ -100,7 +100,7 @@ class RoboFile extends \Robo\Tasks
     * @return void
     */
    public function localesMo() {
-      $this->_exec('./tools/release --compile-mo');
+      $this->_exec('./vendor/bin/plugin-release --compile-mo');
       return $this;
    }
 
