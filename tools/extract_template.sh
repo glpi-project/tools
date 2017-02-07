@@ -30,10 +30,18 @@
 #  * ---------------------------------------------------------------------
 # */
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIR=${DIR%/vendor*}
 pushd $DIR > /dev/null
 
-NAME='{NAME}'
+if [ -f "setup.php" ]; then
+   #setup.php found: it's a plugin.
+   NAME="$(grep -m1 "PLUGIN_.*_VERSION" setup.php|cut -d _ -f 2)"
+else
+   #using core most probably
+   NAME="GLPI"
+fi;
+
 POTFILE=${NAME,,}.pot
 
 PHP_SOURCES=`find ./ -name \*.php -not -path "./vendor/*" -not -path "./lib/*"`
