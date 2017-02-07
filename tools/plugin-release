@@ -8,9 +8,7 @@ from termcolor import colored
 from lxml import etree
 from fnmatch import fnmatch
 
-plugin_dir = os.path.dirname(
-    os.path.dirname(os.path.abspath(__file__))
-)
+plugin_dir =  os.path.abspath(__file__).split('vendor', 1)[0]
 dist_dir = os.path.join(
     plugin_dir,
     'dist'
@@ -647,8 +645,7 @@ def main():
 
     plugin_name = guess_plugin_name()
 
-    plugin_repo =  os.path.abspath(__file__).split('vendor', 1)[0]
-    repo = git.Repo(plugin_repo)
+    repo = git.Repo(plugin_dir)
     tagrefs = repo.tags
 
     if args.f == True:
@@ -668,9 +665,9 @@ def main():
     buildver = None
     if args.compile_mo or args.minify:
         if args.compile_mo:
-            compile_mo(plugin_repo)
+            compile_mo(plugin_dir)
         if args.minify:
-            minify(plugin_repo)
+            minify(plugin_dir)
     elif (args.extra or args.commit) and (not args.extra or not args.commit or not args.release):
         print_err('You have to specify --version --commit and --extra all together')
         sys.exit(1)
