@@ -329,6 +329,7 @@ def create_gh_release(archive, gh_id, plugin_name, ver):
     #create release if it does not exists
     if gh_id is None and gh_release is None:
         is_prerelease = True if commit else False
+        #TODO: retrieve ChangeLog from MD file if exists, and add it to gh release
         gh_release = gh_repo.create_git_release(
             ver,
             'GLPI %s %s' % (plugin_name, ver),
@@ -480,23 +481,19 @@ def valid_commit(repo, c):
 
 def guess_plugin_name():
     """
-    Tries to guess plugin name, ask user at last
+    Tries to guess plugin name, from version constant, take directory name at last
     """
     name = None
 
-    filename = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        'extract_template.sh'
-    )
+    filename = os.path.join(plugin_dir, 'setup.php')
 
     #try to get configured plugin name
-    if os.path.exists(filename):
-        with file(filename) as input:
-            for count, line in enumerate(input):
-                results = re.match(r"^NAME='(.+)'$", line)
-                if results:
-                    name = results.group(1)
-                    break
+    with file(filename) as input:
+        for count, line in enumerate(input):
+            results = re.match(r"PLUGIN_(.+)_VERSION", line)
+            if results:
+                name = results.group(1)
+                break
 
     if name is None:
         #No configured name found. Let's use current directory name
