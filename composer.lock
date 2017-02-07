@@ -230,7 +230,7 @@
                 }
             ],
             "description": "Modern task runner",
-            "time": "2017-02-06T20:04:22+00:00"
+            "time": "2017-02-06 20:04:22"
         },
         {
             "name": "container-interop/container-interop",

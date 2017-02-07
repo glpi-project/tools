@@ -19,6 +19,9 @@
          "Glpi\\" : "src/"
       }
     },
+    "bin" : [
+      "tools/plugin-release"
+    ],
     "require-dev": {
         "consolidation/robo": "dev-master@dev",
         "patchwork/jsqueeze": "~1.0",
