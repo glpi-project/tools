@@ -647,7 +647,7 @@ def main():
 
     plugin_name = guess_plugin_name()
 
-    plugin_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    plugin_repo =  os.path.abspath(__file__).split('vendor', 1)[0]
     repo = git.Repo(plugin_repo)
     tagrefs = repo.tags
 
