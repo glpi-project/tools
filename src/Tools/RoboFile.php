@@ -28,7 +28,7 @@ class RoboFile extends \Robo\Tasks
     * @return void
     */
    public function minifyCSS() {
-      $css_dir = __DIR__ . '/css';
+      $css_dir = './css';
       if (is_dir($css_dir)) {
          foreach (glob("$css_dir/*.css") as $css_file) {
             if (!$this->endsWith($css_file, 'min.css')) {
@@ -48,7 +48,7 @@ class RoboFile extends \Robo\Tasks
     * @return void
     */
    public function minifyJS() {
-      $js_dir = __DIR__ . '/js';
+      $js_dir = './js';
       if (is_dir($js_dir)) {
          foreach (glob("$js_dir/*.js") as $js_file) {
             if (!$this->endsWith($js_file, 'min.js')) {
