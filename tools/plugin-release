@@ -31,7 +31,7 @@ banned = [
     '.travis.yml'
 ]
 gh_orga = 'pluginsGLPI'
-script_version = '1.0.2'
+script_version = '1.0.3'
 
 def print_err(msg):
     """
@@ -399,7 +399,7 @@ def prepare(rel_name, archive):
 
     compile_mo(build_dir)
 
-    minify(build_dir)
+    minify(build_dir, False)
 
     plugin = tarfile.open(archive, 'w|bz2')
 
@@ -427,7 +427,7 @@ def compile_mo(build_dir):
                 )
                 p1.communicate()
 
-def minify(build_dir):
+def minify(build_dir, standalone = True):
     robo_path = os.path.join(plugin_dir, 'vendor', 'bin', 'robo')
     if os.path.exists(robo_path):
         robo = [robo_path, 'minify']
@@ -445,10 +445,8 @@ def minify(build_dir):
     else:
         print_err("Robo.li is not installed; cannot minify!")
 
-    if os.path.exists(os.path.join(build_dir, 'RoboFile.php')):
+    if not standalone and os.path.exists(os.path.join(build_dir, 'RoboFile.php')):
         os.remove(os.path.join(build_dir, 'RoboFile.php'))
-    if os.path.exists(os.path.join(build_dir, 'RoboFilePlugin.php')):
-        os.remove(os.path.join(build_dir, 'RoboFilePlugin.php'))
 
 def valid_commit(repo, c):
     """
