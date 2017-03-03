@@ -31,7 +31,7 @@ banned = [
     '.travis.yml'
 ]
 gh_orga = 'pluginsGLPI'
-script_version = '1.0.3'
+script_version = '1.0.4'
 
 def print_err(msg):
     """
@@ -632,12 +632,13 @@ def main():
     if verbose:
         print args
 
-    if github:
-        import github
-        gh_cred_file = os.path.join(plugin_dir, '.gh_token')
-        if not os.path.exists(gh_cred_file):
-            print_err('GitHub credential file does not exists! Either create it or use the --nogithub option.')
-            sys.exit(1)
+    if not args.compile_mo and not args.minify and not args.propose:
+        if github:
+            import github
+            gh_cred_file = os.path.join(plugin_dir, '.gh_token')
+            if not os.path.exists(gh_cred_file):
+                print_err('GitHub credential file does not exists! Either create it or use the --nogithub option.')
+                sys.exit(1)
 
     plugin_name = guess_plugin_name()
 
