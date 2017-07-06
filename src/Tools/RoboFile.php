@@ -11,6 +11,7 @@ class RoboFile extends \Robo\Tasks
 {
    protected $csignore = ['/vendor/'];
    protected $csfiles  = ['./'];
+   protected $headerTemplate;
 
    /**
     * Minify all
@@ -192,4 +193,140 @@ class RoboFile extends \Robo\Tasks
 
       return (substr($haystack, -$length) === $needle);
    }
+
+   /**
+    * Update headers in source files
+    */
+   public function codeHeadersUpdate() {
+      $toUpdate = $this->getTrackedFiles();
+      foreach ($toUpdate as $file) {
+         $this->replaceSourceHeader($file);
+      }
+   }
+
+   /**
+    * Returns all files tracked in the repository
+    *
+    * @param string $version
+    * @throws Exception
+    * @return array
+    */
+   protected function getTrackedFiles($version = null) {
+      $output = [];
+      if ($version === null) {
+         $version = 'HEAD';
+      }
+      exec("git ls-tree -r '$version' --name-only", $output, $retCode);
+      if ($retCode != '0') {
+         throw new Exception("Unable to get tracked files");
+      }
+      return $output;
+   }
+
+   /**
+    * Update source code header in a source file
+    * @param string $filename
+    */
+   protected function replaceSourceHeader($filename) {
+      // get the content of the file to update
+      $source = file_get_contents($filename);
+
+      // define regex for the file type
+      $ext = pathinfo($filename, PATHINFO_EXTENSION);
+      switch ($ext) {
+         case 'php':
+            $source = $this->replacesourceHeaderForPHP($source);
+            break;
+
+         default:
+            // Unhandled file format
+            return;
+      }
+
+      if (file_put_contents($filename, $source) === false) {
+         throw new Exception('Failed to write ' . $filename);
+      }
+   }
+
+   /**
+    * Update the header in given source and returns the result
+    * @return string
+    */
+   protected function replacesourceHeaderForPHP($source) {
+      $prefix              = "\<\?php\\n/\*(\*)?\\n";
+      $replacementPrefix   = "<?php\n/**\n";
+      $suffix              = "\\n( )?\*/";
+      $replacementSuffix   = "\n */";
+
+      // format header template for the file type
+      $header = trim($this->getHeaderTemplate());
+      $formatedHeader = $replacementPrefix . $this->getFormatedHeaderTemplate('php', $header) . $replacementSuffix;
+
+      // update authors in formated template
+      $headerMatch = [];
+      $originalAuthors = [];
+      $authors = [];
+      $authorsRegex = "#^.*(\@author .*)$#Um";
+      preg_match('#^' . $prefix . '(.*)' . $suffix . '#Us', $source, $headerMatch);
+      if (isset($headerMatch[0])) {
+         $originalHeader = $headerMatch[0];
+         preg_match_all($authorsRegex, $originalHeader, $originalAuthors);
+         if (isset($originalAuthors[1])) {
+            $originalAuthors = $this->getFormatedHeaderTemplate('php', implode("\n", $originalAuthors[1]));
+            $formatedHeader = preg_replace($authorsRegex, $originalAuthors, $formatedHeader, 1);
+         }
+      }
+
+      // replace the header if it exists
+      $source = preg_replace('#^' . $prefix . '(.*)' . $suffix . '#Us', $formatedHeader, $source, 1);
+      if (empty($source)) {
+         throw new Exception("An error occurred while processing $filename");
+      }
+
+      return $source;
+   }
+
+   /**
+    * Read the header template from a file
+    * @throws Exception
+    * @return string
+    */
+   protected function getHeaderTemplate() {
+      if (empty($this->headerTemplate)) {
+         //$this->headerTemplate = file_get_contents(__DIR__ . '../../../../../tools/HEADER');
+         $this->headerTemplate = file_get_contents('tools/HEADER');
+         if (empty($this->headerTemplate)) {
+            throw new Exception('Header template file not found');
+         }
+      }
+
+      $copyrightRegex = "#Copyright (\(c\)|©) (\d{4}-)?(\d{4}) #iUm";
+      $year = date("Y");
+      $replacement = 'Copyright © ${2}' . $year . ' ';
+      $this->headerTemplate = preg_replace($copyrightRegex, $replacement, $this->headerTemplate);
+
+      return $this->headerTemplate;
+   }
+
+   /**
+    * Format header template for a file type based on extension
+    *
+    * @param string $extension
+    * @return string
+    */
+   protected function getFormatedHeaderTemplate($extension, $template) {
+      switch ($extension) {
+         case 'php':
+            $lines = explode("\n", $template);
+            foreach ($lines as &$line) {
+               $line = rtrim(" * $line");
+            }
+            return implode("\n", $lines);
+            break;
+
+         default:
+            return $template;
+      }
+   }
+
 }
