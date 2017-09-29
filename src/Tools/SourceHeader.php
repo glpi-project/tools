@@ -2,7 +2,11 @@
 
 namespace Glpi\Tools;
 
+use \Exception;
+
 class SourceHeader {
+
+   private $headerTemplate = '';
 
    /**
     * Search for a Header template file in  the projecct first, and failback to internal header template
@@ -11,17 +15,25 @@ class SourceHeader {
     *
     * @return string path to header file
     */
+   /*
    protected function findHeaderTemplateFile() {
-      $filename = __DIR__ . '/../../../../../../tools/HEADER';
-      if (file_exists($filename)) {
+      $filename = __DIR__ . '/../../../../../tools/HEADER';
+      $filename = realpath($filename);
+      if ($filename !== false && file_exists($filename)) {
          if (!is_readable($filename)) {
             throw new Exception("$filename found but is not readable");
          }
       } else {
          $filename = __DIR__ . '/../tools/HEADER';
+         $filename = realpath($filename);
       }
 
       return $filename;
+   }
+   */
+
+   public function setHeaderTemplate($template) {
+      $this->headerTemplate = $template;
    }
 
    /**
@@ -52,7 +64,7 @@ class SourceHeader {
     *
     * @param string $filename source code file to process
     */
-   protected function replaceSourceHeader($filename) {
+   public function replaceSourceHeader($filename) {
       // get the content of the file to update
       $source = file_get_contents($filename);
 
@@ -87,7 +99,7 @@ class SourceHeader {
       $replacementSuffix   = "\n */";
 
       // format header template for the file type
-      $header = trim($this->getHeaderTemplate());
+      $header = trim($this->headerTemplate);
       $formatedHeader = $replacementPrefix . $this->getFormatedHeaderTemplate('php', $header) . $replacementSuffix;
 
       // update authors in formated template

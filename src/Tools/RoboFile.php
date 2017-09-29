@@ -198,7 +198,11 @@ class RoboFile extends \Robo\Tasks
     */
    public function codeHeadersUpdate() {
       $sourceHeader = $this->getSourceHeader();
-      $git = $this->getGit();
+      $git = $this->getGit(getcwd());
+
+      $template = $git->getFileFromGit('tools/HEADER');
+      $sourceHeader->setHeaderTemplate($template);
+
       $toUpdate = $git->getTrackedFiles();
       foreach ($toUpdate as $file) {
          $sourceHeader->replaceSourceHeader($file);
@@ -211,7 +215,8 @@ class RoboFile extends \Robo\Tasks
     *
     * @return \Glpi\Tools\Git
     */
-   protected function getGit() {
+   protected function getGit($directory) {
+      return new Git($directory);
       return new Git(__DIR__ . '/../../../../../..');
    }
 
