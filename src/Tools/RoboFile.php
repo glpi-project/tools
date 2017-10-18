@@ -68,7 +68,52 @@ class RoboFile extends \Robo\Tasks
     * @return void
     */
    public function localesExtract() {
-      $this->_exec('./vendor/bin/extract_template.sh');
+
+      $potfile = $this->getProjectName() . '.pot';
+
+      // create locales directory
+      if (!file_exists('./locales')) {
+         $success = mkdir('./locales');
+         if (!$success) {
+            throw new \Exception('Failed to create locales directory');
+         }
+      }
+
+      // iterate subtree of the ilesystem to enumerate fiels with locales
+      $directory = new \RecursiveDirectoryIterator('.');
+      $filter = new \RecursiveCallbackFilterIterator($directory, function($current, $key, $iterator) {
+         if ($current->getFilename()[0] === '.') {
+            return false;
+         }
+
+         if (!$current->isDir()) {
+            return ($current->getExtension() === 'php');
+         }
+
+         if (strpos($current->getPathname(), './lib') === 0) {
+            return false;
+         }
+         if (strpos($current->getPathname(), './vendor') === 0) {
+            return false;
+         }
+         if (strpos($current->getPathname(), './node_modules') === 0) {
+            return false;
+         }
+
+         return true;
+      });
+      $iterator = new \RecursiveIteratorIterator($filter);
+      $files = [];
+      foreach ($iterator as $info) {
+         $files[] = $info->getPathname();
+      }
+      $files = implode(' ', $files);
+
+      // extract locales from source code
+      $command = "xgettext $files -o locales/$potfile -L PHP --add-comments=TRANS --from-code=UTF-8 --force-po";
+      $command.= " --keyword=_n:1,2,4t --keyword=__s:1,2t --keyword=__:1,2t --keyword=_e:1,2t --keyword=_x:1c,2,3t --keyword=_ex:1c,2,3t";
+      $command.= " --keyword=_sx:1c,2,3t --keyword=_nx:1c,2,3,5t";
+      $this->_exec($command);
       return $this;
    }
 
@@ -100,7 +145,20 @@ class RoboFile extends \Robo\Tasks
     * @return void
     */
    public function localesMo() {
-      $this->_exec('./vendor/bin/plugin-release --compile-mo');
+      $localesPath = './locales';
+      if ($handle = opendir($localesPath)) {
+         while (($file = readdir($handle)) !== false) {
+            if ($file != "." && $file != "..") {
+               $poFile = "$localesPath/$file";
+               if (pathinfo($poFile, PATHINFO_EXTENSION) == 'po') {
+                  $moFile = str_replace('.po', '.mo', $poFile);
+                  $command = "msgfmt $poFile -o $moFile";
+                  $this->_exec($command);
+               }
+            }
+         }
+         closedir($handle);
+      }
       return $this;
    }
 
@@ -191,5 +249,44 @@ class RoboFile extends \Robo\Tasks
       }
 
       return (substr($haystack, -$length) === $needle);
+   }
+
+   /**
+    * Finds the name of the project
+    * @throws \Exception
+    * @return string|null the name pf the project
+    */
+   private function getProjectName() {
+      $projectName = null;
+
+      if (file_exists('setup.php') && is_readable('setup.php')) {
+         // The project is a plugin
+         $fileContent = file_get_contents('setup.php');
+         $pattern = "#^define\('PLUGIN_(.*)_VERSION', '([^']*)'\);$#m";
+         $matches = null;
+         preg_match($pattern, $fileContent, $matches);
+         if (!isset($matches[1])) {
+            throw new \Exception("Could not determine the name of of the project");
+         }
+         $projectName = $matches[1];
+      }
+
+      if (file_exists('inc/define.php') && is_readable('inc/define.php')) {
+         //The project seems to be GLPI
+         $fileContent = file_get_contents('setup.php');
+         $pattern = "(GLPI)_VERSION";
+         $matches = null;
+         preg_match($pattern, $fileContent, $matches);
+         if (!isset($matches[1])) {
+            throw new \Exception("Could not determine the name of of the project");
+         }
+         $projectName = $matches[1];
+      }
+
+      if ($projectName === null) {
+         throw new \Exception("Could not determine the name of of the project");
+      }
+
+      return strtolower($projectName);
    }
 }
