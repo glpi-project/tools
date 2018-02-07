@@ -2,7 +2,7 @@
     "name": "glpi-project/tools",
     "description": "Various tools for GLPI and its plugins",
     "keywords": ["GLPI", "plugins", "tools"],
-    "license": "GPLv3",
+    "license": "GPL-3.0-or-later",
     "authors": [
         {
             "name": "Teclib'",
