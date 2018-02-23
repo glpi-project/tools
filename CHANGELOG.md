@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.1.4] - 2018-02-23
+- Latest coding standards
+
 ## [0.1.3] - 2018-01-05
 
 - Coding standards are still in 0.5 for projects using tools
