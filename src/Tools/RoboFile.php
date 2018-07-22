@@ -192,4 +192,100 @@ class RoboFile extends \Robo\Tasks
 
       return (substr($haystack, -$length) === $needle);
    }
+
+   /**
+    * @return string
+    */
+    protected function getPluginPath() {
+      return __DIR__;
+   }
+
+   /**
+    * @return string
+    */
+    protected function getPluginName() {
+      return basename($this->getPluginPath());
+   }
+
+   /**
+    * Get a file from git tree
+    * @param string $path
+    * @param string $rev a commit hash, a tag or a branch
+    * @throws Exception
+    * @return string content of the file
+    */
+    protected function getFileFromGit($path, $rev) {
+      $output = shell_exec("git show $rev:$path");
+      if ($output === null) {
+         throw new Exception ("coult not get file from git: $rev:$path");
+      }
+      return $output;
+   }
+
+   /**
+    * @return mixed
+    * @throws Exception
+    */
+    protected function getVersion() {
+      $setupContent = $this->getFileFromGit('setup.php', 'HEAD');
+      $constantName = "PLUGIN_" . strtoupper($this->getPluginName()) . "_VERSION";
+      $pattern = "#^define\('$constantName', '([^']*)'\);$#m";
+      preg_match($pattern, $setupContent, $matches);
+      if (isset($matches[1])) {
+         return $matches[1];
+      }
+
+      throw new Exception("Could not determine version of the plugin");
+   }
+
+   public function archiveBuild() {
+      $pluginName = $this->getPluginName();
+      $pluginPath = $this->getPluginPath();
+
+      // get Version fron source code
+      $version = $this->getVersion();
+
+      // Where the files are extracted from the GIT repository
+      // for extra changes before building the final archive
+      $archiveWorkdir = "$pluginPath/output/dist/archive_workdir";
+
+      // Name of the distribuable archive 
+      $archiveFile = "$pluginPath/output/dist/glpi-$pluginName-$version.tar.bz2";
+      $this->taskDeleteDir($archiveWorkdir)->run();
+      mkdir($archiveWorkdir, 0777, true);
+      // Select files being added in the distribuable archive
+      $filesToArchive = implode(' ', [
+         'ajax',
+         'css',
+         'front',
+         'inc',
+         'install',
+         'images',
+         'lib',
+         'locales',
+         'pics',
+         'scripts',
+         'tools',
+         'tpl',
+         '*.md',
+         '*.js',
+         '*.php',
+         'composer.*',
+         'package.json',
+      ]);
+
+      $rev = 'HEAD';
+      // Extract files from GIT repository and put them in the working directory
+      $this->_exec("git archive --prefix=$pluginName/ $rev $filesToArchive | tar x -C '$archiveWorkdir' ");
+      
+      // Generate the vendor/ directory for the plugin, without dev dependencies
+      if (is_file('composer.json')) {
+         $this->_exec("composer install --no-dev --working-dir='$archiveWorkdir/$pluginName'");
+      }
+      
+      // Build the final archive
+      $this->taskPack($archiveFile)
+      ->addDir("/$pluginName", "$archiveWorkdir/$pluginName")
+      ->run();
+   }
 }
