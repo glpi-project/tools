@@ -25,7 +25,7 @@ class RoboFile extends \Robo\Tasks
    /**
     * Minify CSS stylesheets
     *
-    * @return void
+    * @return $this
     */
    public function minifyCSS() {
       $css_dir = './css';
@@ -45,7 +45,7 @@ class RoboFile extends \Robo\Tasks
    /**
     * Minify JavaScript files stylesheets
     *
-    * @return void
+    * @return $this
     */
    public function minifyJS() {
       $js_dir = './js';
@@ -143,7 +143,7 @@ class RoboFile extends \Robo\Tasks
     * @option $strict  Show warnings as well as errors.
     *    Default is to show only errors.
     *
-    *    @return void
+    * @return \Robo\Result
     */
    public function codeCs(
       $file = null,
