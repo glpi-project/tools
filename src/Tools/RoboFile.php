@@ -65,7 +65,7 @@ class RoboFile extends \Robo\Tasks
    /**
     * Extract translatable strings
     *
-    * @return void
+    * @return $this
     */
    public function localesExtract() {
       $this->_exec('./vendor/bin/extract_template.sh');
@@ -75,10 +75,12 @@ class RoboFile extends \Robo\Tasks
    /**
     * Push locales to transifex
     *
-    * @return void
+    * @param string $branch
+    * @return $this
     */
-   public function localesPush() {
-      $this->_exec('tx push -s');
+   public function localesPush($branch = '') {
+      $branch = (($branch) ? ' -b ' : '') . $branch;
+      $this->_exec('tx push -s ' . $branch);
       return $this;
    }
 
@@ -86,18 +88,19 @@ class RoboFile extends \Robo\Tasks
     * Pull locales from transifex.
     *
     * @param integer $percent Completeness percentage, defaults to 70
-    *
-    * @return void
+    * @param string $branch
+    * @return $this
     */
-   public function localesPull($percent = 70) {
-      $this->_exec('tx pull -a --minimum-perc=' .$percent);
+   public function localesPull($percent = 70, $branch = '') {
+      $branch = (($branch) ? ' -b ' : '') . $branch;
+      $this->_exec('tx pull -a --minimum-perc=' . $percent . $branch);
       return $this;
    }
 
    /**
     * Build MO files
     *
-    * @return void
+    * @return $this
     */
    public function localesMo() {
       $this->_exec('./vendor/bin/plugin-release --compile-mo');
@@ -107,11 +110,12 @@ class RoboFile extends \Robo\Tasks
    /**
     * Extract and send locales
     *
-    * @return void
+    * @param string $branch
+    * @return $this
     */
-   public function localesSend() {
+   public function localesSend($branch = '') {
       $this->localesExtract()
-           ->localesPush();
+           ->localesPush($branch);
       return $this;
    }
 
@@ -119,11 +123,11 @@ class RoboFile extends \Robo\Tasks
     * Retrieve locales and generate mo files
     *
     * @param integer $percent Completeness percentage, defaults to 70
-    *
-    * @return void
+    * @param string $branch
+    * @return $this
     */
-   public function localesGenerate($percent = 70) {
-      $this->localesPull($percent)
+   public function localesGenerate($percent = 70, $branch = '') {
+      $this->localesPull($percent, $branch)
            ->localesMo();
       return $this;
    }
