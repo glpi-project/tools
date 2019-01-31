@@ -27,7 +27,7 @@
     "require": {
         "consolidation/robo": "^1.3",
         "glpi-project/coding-standard": "^0.7",
-        "natxet/CssMin": "^3.0",
+        "natxet/cssmin": "^3.0",
         "patchwork/jsqueeze": "^1.0"
     }
 }
