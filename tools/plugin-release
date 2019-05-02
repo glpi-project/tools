@@ -31,7 +31,7 @@ banned = [
     '.travis.yml'
 ]
 gh_orga = 'pluginsGLPI'
-script_version = '1.0.4'
+script_version = '1.0.5'
 
 def print_err(msg):
     """
