@@ -585,7 +585,7 @@ def main():
     parser.add_argument(
         '-c',
         '--commit',
-        help='Specify commit to archive (-v required)'
+        help='Specify commit to archive (-r required)'
     )
     parser.add_argument(
         '-e',
