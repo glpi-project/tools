@@ -31,7 +31,7 @@ banned = [
     '.travis.yml'
 ]
 gh_orga = 'pluginsGLPI'
-script_version = '1.0.4'
+script_version = '1.0.5'
 
 def print_err(msg):
     """
@@ -576,6 +576,12 @@ def main():
         help="Only do chec, does not release anything",
         action='store_true'
     )
+    parser.add_argument(
+        '-d',
+        '--dont-check',
+        help="DO NOT check version (usefull to built archive for commit in a ci)",
+        action='store_false'
+    )
     group.add_argument(
         '-p',
         '--propose',
@@ -585,7 +591,7 @@ def main():
     parser.add_argument(
         '-c',
         '--commit',
-        help='Specify commit to archive (-v required)'
+        help='Specify commit to archive (-r required)'
     )
     parser.add_argument(
         '-e',
@@ -700,7 +706,7 @@ def main():
             )
 
     if build:
-        if check_version(buildver) and args.check_only == False:
+        if not args.dont_check or (check_version(buildver) and args.check_only == False):
             _do_build(repo, buildver)
 
 if __name__ == "__main__":
