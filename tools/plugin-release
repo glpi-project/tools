@@ -472,7 +472,7 @@ def valid_commit(repo, c):
             repo_commit.committer,
             time.strftime(dformat, time.gmtime(repo_commit.committed_date)),
             repo_commit.message
-        ), None, 'on_grey', attrs=['bold'])
+        ), None, 'on_grey', attrs=['bold']).encode('utf-8')
         return True
     except gitdb.exc.BadObject:
         return False
