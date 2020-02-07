@@ -2,7 +2,11 @@
 # Adapted from Galette release script
 
 import os, sys, argparse, re, git, subprocess
-import tarfile, shutil, gitdb, time, urllib.request, urllib.error, urllib.parse, json
+import tarfile, shutil, gitdb, time, json
+if sys.version_info[0] == 3:
+    import urllib.request, urllib.error, urllib.parse
+else:
+    import urllib2
 from datetime import datetime
 from termcolor import colored
 from lxml import etree
@@ -30,8 +34,8 @@ banned = [
     '.atoum.php',
     '.travis.yml'
     '.circleci/',
-    'screenshots/',
-    '.ignore-release'
+    '.ignore-release',
+    'composer.lock'
 ]
 gh_orga = 'pluginsGLPI'
 script_version = '1.0.5'
