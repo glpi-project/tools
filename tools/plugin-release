@@ -29,6 +29,11 @@ banned = [
     'tests/',
     '.atoum.php',
     '.travis.yml'
+    '.circleci/',
+    'screenshots/',
+    '*.xml',
+    '*.(png|gif|jp(e)?g)',
+    '.ignore-release'
 ]
 gh_orga = 'pluginsGLPI'
 script_version = '1.0.5'
@@ -254,6 +259,11 @@ def _do_build(repo, ver):
         ls_files = subprocess.check_output(['git', 'ls-tree', '-r', ver, '--name-only'])
 
         paths = []
+
+        if os.path.exists(os.path.join(build_dir, '.ignore-release')):
+            f = open(os.path.join(build_dir, '.ignore-release'),'r')
+            for line in f:
+                banned.append(line.strip())
 
         for ls_file in ls_files.split('\n'):
             if ls_file != '':
