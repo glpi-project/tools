@@ -35,7 +35,6 @@ banned = [
     '.travis.yml'
     '.circleci/',
     '.ignore-release',
-    'composer.lock'
 ]
 gh_orga = 'pluginsGLPI'
 script_version = '1.0.5'
