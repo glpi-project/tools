@@ -104,13 +104,8 @@ def get_latest_version():
     """
     Look for latest version
     """
-    last = None
-    for tagref in tagrefs:
-        if valid_version(tagref.name):
-            #last created minor version is always the last one :)
-            if tagref.name > last:
-                last = tagref.name
-
+    tagrefs.sort(key=lambda tagref: list(map(int, tagref.name.split('.'))) if valid_version(tagref.name) else [0])
+    last = tagrefs[-1]
     return last
 
 def is_existing_version(ver):
