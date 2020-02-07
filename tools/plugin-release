@@ -70,15 +70,14 @@ def propose_version():
     last_major = '0'
     last_minor = '0'
 
+    tagrefs.sort(key=lambda tagref: list(map(int, tagref.name.split('.'))) if valid_version(tagref.name) else [0])
+    last_minor = tagrefs[-1].name
+
     for tagref in tagrefs:
         if valid_version(tagref.name):
-            #last minor version is always the last one :)
-            if tagref.name > last_minor:
-                last_minor = tagref.name
-
             #last major version
-            if len(tagref.name) == 5 and tagref.name > last_major:
-                last_major = tagref.name
+            if int(tagref.name.split('.')[-1]) == 0:
+                last_major = tagref.name.replace('.0', '')
 
     if verbose:
         print('last minor: %s | last major %s' % (last_minor, last_major))
@@ -87,13 +86,13 @@ def propose_version():
     new_minor = None
     new_major = None
 
-    if len(last_minor) == 5:
+    if int(last_minor.split('.')[-1]) == 0:
         #if the latest is a major version
         new_minor = last_minor + ('.1')
     else:
         new_minor = '.'.join(incr_version(last_minor))
 
-    new_major = '.'.join(incr_version(last_major))
+    new_major = '.'.join(incr_version(last_major)) + '.0'
 
     print("""Proposed versions:
     minor: %s
