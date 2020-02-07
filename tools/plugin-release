@@ -2,7 +2,11 @@
 # Adapted from Galette release script
 
 import os, sys, argparse, re, git, subprocess
-import tarfile, shutil, gitdb, time, urllib2, json
+import tarfile, shutil, gitdb, time, json
+if sys.version_info[0] == 3:
+    import urllib.request, urllib.error, urllib.parse
+else:
+    import urllib2
 from datetime import datetime
 from termcolor import colored
 from lxml import etree
@@ -28,7 +32,9 @@ banned = [
     'tools/',
     'tests/',
     '.atoum.php',
-    '.travis.yml'
+    '.travis.yml',
+    '.circleci/',
+    '.ignore-release',
 ]
 gh_orga = 'pluginsGLPI'
 script_version = '1.0.5'
@@ -37,7 +43,7 @@ def print_err(msg):
     """
     Display colored error message
     """
-    print colored(msg, 'red', attrs=['bold'])
+    print(colored(msg, 'red', attrs=['bold']))
 
 def get_numeric_version(ver):
     """
@@ -70,47 +76,41 @@ def propose_version():
     last_major = '0'
     last_minor = '0'
 
+    tagrefs.sort(key=lambda tagref: list(map(int, tagref.name.split('.'))) if valid_version(tagref.name) else [0])
+    last_minor = tagrefs[-1].name
+
     for tagref in tagrefs:
         if valid_version(tagref.name):
-            #last minor version is always the last one :)
-            if tagref.name > last_minor:
-                last_minor = tagref.name
-
             #last major version
-            if len(tagref.name) == 5 and tagref.name > last_major:
-                last_major = tagref.name
+            if int(tagref.name.split('.')[-1]) == 0:
+                last_major = tagref.name.replace('.0', '')
 
     if verbose:
-        print 'last minor: %s | last major %s' % (last_minor, last_major)
+        print('last minor: %s | last major %s' % (last_minor, last_major))
 
     #no version provided. propose one
     new_minor = None
     new_major = None
 
-    if len(last_minor) == 5:
+    if int(last_minor.split('.')[-1]) == 0:
         #if the latest is a major version
         new_minor = last_minor + ('.1')
     else:
         new_minor = '.'.join(incr_version(last_minor))
 
-    new_major = '.'.join(incr_version(last_major))
+    new_major = '.'.join(incr_version(last_major)) + '.0'
 
-    print """Proposed versions:
+    print("""Proposed versions:
     minor: %s
     major: %s
-    """ % (new_minor, new_major)
+    """ % (new_minor, new_major))
 
 def get_latest_version():
     """
     Look for latest version
     """
-    last = None
-    for tagref in tagrefs:
-        if valid_version(tagref.name):
-            #last created minor version is always the last one :)
-            if tagref.name > last:
-                last = tagref.name
-
+    tagrefs.sort(key=lambda tagref: list(map(int, tagref.name.split('.'))) if valid_version(tagref.name) else [0])
+    last = tagrefs[-1]
     return last
 
 def is_existing_version(ver):
@@ -132,7 +132,10 @@ def ask_user_confirm(msg):
     else:
         while True:
             sys.stdout.write(msg)
-            choice = raw_input().lower()
+            if sys.version_info[0] == 3:
+                choice = input().lower()
+            else:
+                choice = raw_input().lower()
             if choice == 'y' or choice == 'yes':
                 return True
             elif choice == 'n' or choice == 'no':
@@ -188,18 +191,34 @@ def _do_build(repo, ver):
         exists = False
         gh_id = None
 
-        try:
-            request = urllib2.Request(url)
-            handle = urllib2.urlopen(request)
-            contents = json.loads(handle.read())
+        if github:
+            if sys.version_info[0] == 3:
+                try:
+                    request = urllib.request.Request(url)
+                    handle = urllib.request.urlopen(request)
+                    contents = json.loads(handle.read())
 
-            for asset in contents['assets']:
-                if archive_name == asset['name']:
-                    exists = True
-                    gh_id = contents['id']
-                    break
-        except (urllib2.URLError, urllib2.HTTPError):
-            pass
+                    for asset in contents['assets']:
+                        if archive_name == asset['name']:
+                            exists = True
+                            gh_id = contents['id']
+                            break
+                except (urllib.error.URLError, urllib.error.HTTPError):
+                    pass
+            else:
+                try:
+                    request = urllib2.Request(url)
+                    handle = urllib2.urlopen(request)
+                    contents = json.loads(handle.read())
+
+                    for asset in contents['assets']:
+                        if archive_name == asset['name']:
+                            exists = True
+                            gh_id = contents['id']
+                            break
+                except (urllib2.URLError, urllib2.HTTPError):
+                    pass
+
 
         if exists:
             #we know a release exists for this tag. Check if files have been uploaded yet
@@ -220,7 +239,7 @@ def _do_build(repo, ver):
             )
 
     if exists or ascexists:
-        msg = None
+        msg = ''
         if exists:
             loctxt = ''
             if local:
@@ -231,7 +250,7 @@ def _do_build(repo, ver):
             loctxt = ''
             if ascLocal:
                 loctxt = ' locally'
-            if msg is not None:
+            if msg is not '':
                 msg += ' and has been %ssigned!' % loctxt
             else:
                 msg += 'Release has been %ssigned!' % loctxt
@@ -239,7 +258,7 @@ def _do_build(repo, ver):
         msg += '\n\nYou will *NOT* build another one :)'
         print_err(msg)
     else:
-        print 'Building %s...' % rel_name
+        print('Building %s...' % rel_name)
 
         if verbose:
             typestr = 'Tag'
@@ -249,17 +268,25 @@ def _do_build(repo, ver):
                 typestr = 'Commit'
                 typever = commit
 
-            print 'Release name: %s, %s: %s, Dest: %s' % (
+            print('Release name: %s, %s: %s, Dest: %s' % (
                 rel_name,
                 typestr,
                 typever,
                 archive
-            )
+            ))
 
         ls_files_cmd = 'git ls-tree -r %s --name-only' % ver
-        ls_files = subprocess.check_output(['git', 'ls-tree', '-r', ver, '--name-only'])
+        ls_files = subprocess.check_output(['git', 'ls-tree', '-r', str(ver), '--name-only'])
+        if sys.version_info[0] == 3:
+            ls_files = ls_files.decode()
 
         paths = []
+
+        if os.path.exists(os.path.join(plugin_dir, '.ignore-release')):
+            f = open(os.path.join(plugin_dir, '.ignore-release'),'r')
+            for line in f:
+                if line.strip() != '':
+                    banned.append(line.strip())
 
         for ls_file in ls_files.split('\n'):
             if ls_file != '':
@@ -273,7 +300,7 @@ def _do_build(repo, ver):
 
         archive_cmd_pattern = 'git archive --prefix=%s/ %s %s | bzip2 > %s'
         if commit and extra:
-            print 'Archiving GIT commit %s' % commit
+            print('Archiving GIT commit %s' % commit)
             archive_cmd = archive_cmd_pattern % (
                 plugin_name+'/',
                 commit,
@@ -281,7 +308,7 @@ def _do_build(repo, ver):
                 archive
             )
         else:
-            print 'Archiving GIT tag %s' % ver
+            print('Archiving GIT tag %s' % ver)
             archive_cmd = archive_cmd_pattern % (
                 plugin_name+'/',
                 ver,
@@ -331,7 +358,7 @@ def create_gh_release(archive, gh_id, plugin_name, ver):
         is_prerelease = True if commit else False
         #TODO: retrieve ChangeLog from MD file if exists, and add it to gh release
         gh_release = gh_repo.create_git_release(
-            ver,
+            str(ver),
             'GLPI %s %s' % (plugin_name, ver),
             'Automated release from release script',
             True,
@@ -383,7 +410,7 @@ def prepare(rel_name, archive):
 
     build_dir = os.path.join(src_dir, plugin_name)
 
-    print 'Adding vendor libraries'
+    print('Adding vendor libraries')
     if os.path.exists(os.path.join(build_dir, 'composer.lock')):
         composer = ['composer', 'install', '-o', '--no-dev']
 
@@ -415,12 +442,12 @@ def prepare(rel_name, archive):
 def compile_mo(build_dir):
     locales_dir = os.path.join(build_dir, 'locales')
     if verbose:
-        print 'Locales dir: %s' % locales_dir
+        print('Locales dir: %s' % locales_dir)
     if os.path.exists(locales_dir):
         for file in os.listdir(locales_dir):
             if file.endswith('.po'):
                 if verbose:
-                    print 'Compiling %s...' % file
+                    print('Compiling %s...' % file)
                 p1 = subprocess.Popen(
                     ['msgfmt', file, '-o', file.replace('.po', '.mo')],
                     cwd=locales_dir
@@ -435,7 +462,7 @@ def minify(build_dir, standalone = True):
             robo.insert(-1, '-q')
 
         if verbose:
-            print robo
+            print(robo)
 
         p1 = subprocess.Popen(
             robo,
@@ -459,7 +486,7 @@ def valid_commit(repo, c):
         repo_commit = repo.commit(c)
 
         commit = repo_commit.hexsha[:10]
-        print colored("""Commit informations:
+        print(colored("""Commit informations:
         Hash:          %s
         Author:        %s
         Authored date: %s
@@ -472,7 +499,7 @@ def valid_commit(repo, c):
             repo_commit.committer,
             time.strftime(dformat, time.gmtime(repo_commit.committed_date)),
             repo_commit.message
-        ), None, 'on_grey', attrs=['bold']).encode('utf-8')
+        ), None, 'on_grey', attrs=['bold']).encode('utf-8'))
         return True
     except gitdb.exc.BadObject:
         return False
@@ -486,7 +513,7 @@ def guess_plugin_name():
     filename = os.path.join(plugin_dir, 'setup.php')
 
     #try to get configured plugin name
-    with file(filename) as input:
+    with open(filename) as input:
         for count, line in enumerate(input):
             regexp = ".*('|\")PLUGIN_(.+)_VERSION('|\"), ('|\")(.+)('|\")"
             results = re.match(regexp, line)
@@ -502,7 +529,7 @@ def guess_plugin_name():
 
 def check_version(buildver):
     if verbose:
-        print 'Checking for version %s' % buildver
+        print('Checking for version %s' % buildver)
 
     filename = os.path.join(
         plugin_dir,
@@ -512,7 +539,7 @@ def check_version(buildver):
     found = None
     #find version constant
     if os.path.exists(filename):
-        with file(filename) as input:
+        with open(filename, 'r') as input:
             for count, line in enumerate(input):
                 regexp = ".*('|\")PLUGIN_%s_VERSION('|\"), ('|\")(.+)('|\")" % plugin_name.upper()
                 results = re.match(regexp, line)
@@ -520,7 +547,7 @@ def check_version(buildver):
                     found = results.group(4)
                     break
 
-    if not found == buildver:
+    if not (str(found) == str(buildver)):
         print_err('Plugin version check has failed (%s but %s found)!' % (buildver, found))
         return False
 
@@ -533,19 +560,19 @@ def check_version(buildver):
 
     if xmlfile != None:
         if verbose:
-            print 'XML file found in %s' % xmlfile
+            print('XML file found in %s' % xmlfile)
         try:
             xmldoc = etree.parse(xmlfile)
             for version in xmldoc.getiterator('num'):
-                if version.text == buildver:
+                if str(version.text) == str(buildver):
                     if verbose:
-                        print '%s found in the XML file!' % buildver
+                        print('%s found in the XML file!' % buildver)
                     return True
             print_err('%s *NOT* found in the XML file %s' % (buildver, xmlfile))
         except etree.XMLSyntaxError as err:
             print_err('%s is *NOT* XML valid!' % (xmlfile))
             if verbose:
-                print format(err)
+                print(format(err))
             return False
     else:
         print_err('Plugins website configuration file has not been found!')
@@ -557,7 +584,8 @@ def main():
     """
     global verbose, tagrefs, force, extra, assume_yes, sign, plugin_name, github, gh_cred_file
 
-    parser = argparse.ArgumentParser(description='GLPI plugins release script', version=script_version)
+    parser = argparse.ArgumentParser(description='GLPI plugins release script')
+    parser.add_argument('--version', action='version', version=script_version)
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         '-r',
@@ -636,7 +664,7 @@ def main():
     github=args.nogithub
 
     if verbose:
-        print args
+        print(args)
 
     if not args.compile_mo and not args.minify and not args.propose:
         if github:
@@ -658,7 +686,7 @@ def main():
     assume_yes=args.assume_yes
 
     if args.check_only:
-        print '*** Entering *check-only* mode ***'
+        print('*** Entering *check-only* mode ***')
 
     #check if dist_dir exists
     if not os.path.exists(dist_dir):
@@ -677,7 +705,7 @@ def main():
     elif args.commit and args.release and args.extra:
         if valid_commit(repo, args.commit):
             if verbose:
-                print 'Commit is valid'
+                print('Commit is valid')
             build = True
             buildver = args.release
             extra = args.extra
