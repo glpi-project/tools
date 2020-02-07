@@ -209,7 +209,7 @@ def _do_build(repo, ver):
             else:
                 try:
                     request = urllib2.Request(url)
-                    handle = urllib.urlopen(request)
+                    handle = urllib2.urlopen(request)
                     contents = json.loads(handle.read())
 
                     for asset in contents['assets']:
