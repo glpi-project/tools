@@ -239,7 +239,7 @@ def _do_build(repo, ver):
             )
 
     if exists or ascexists:
-        msg = None
+        msg = ''
         if exists:
             loctxt = ''
             if local:
@@ -250,7 +250,7 @@ def _do_build(repo, ver):
             loctxt = ''
             if ascLocal:
                 loctxt = ' locally'
-            if msg is not None:
+            if msg is not '':
                 msg += ' and has been %ssigned!' % loctxt
             else:
                 msg += 'Release has been %ssigned!' % loctxt
@@ -357,7 +357,7 @@ def create_gh_release(archive, gh_id, plugin_name, ver):
         is_prerelease = True if commit else False
         #TODO: retrieve ChangeLog from MD file if exists, and add it to gh release
         gh_release = gh_repo.create_git_release(
-            ver,
+            str(ver),
             'GLPI %s %s' % (plugin_name, ver),
             'Automated release from release script',
             True,
