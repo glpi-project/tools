@@ -256,16 +256,16 @@ def _do_build(repo, ver):
             ))
 
         ls_files_cmd = 'git ls-tree -r %s --name-only' % ver
-        ls_files = subprocess.check_output(['git', 'ls-tree', '-r', ver, '--name-only'])
+        ls_files = subprocess.check_output(['git', 'ls-tree', '-r', str(ver), '--name-only'])
 
         paths = []
 
-        if os.path.exists(os.path.join(build_dir, '.ignore-release')):
-            f = open(os.path.join(build_dir, '.ignore-release'),'r')
+        if os.path.exists(os.path.join(plugin_dir, '.ignore-release')):
+            f = open(os.path.join(plugin_dir, '.ignore-release'),'r')
             for line in f:
                 banned.append(line.strip())
 
-        for ls_file in ls_files.split('\n'):
+        for ls_file in str(ls_files).split('\n'):
             if ls_file != '':
                 append = True
                 for ban in banned:
@@ -516,7 +516,7 @@ def check_version(buildver):
     found = None
     #find version constant
     if os.path.exists(filename):
-        with file(filename) as input:
+        with open(filename, 'r') as input:
             for count, line in enumerate(input):
                 regexp = ".*('|\")PLUGIN_%s_VERSION('|\"), ('|\")(.+)('|\")" % plugin_name.upper()
                 results = re.match(regexp, line)
@@ -524,7 +524,7 @@ def check_version(buildver):
                     found = results.group(4)
                     break
 
-    if not found == buildver:
+    if not (str(found) == str(buildver)):
         print_err('Plugin version check has failed (%s but %s found)!' % (buildver, found))
         return False
 
@@ -541,7 +541,7 @@ def check_version(buildver):
         try:
             xmldoc = etree.parse(xmlfile)
             for version in xmldoc.getiterator('num'):
-                if version.text == buildver:
+                if str(version.text) == str(buildver):
                     if verbose:
                         print('%s found in the XML file!' % buildver)
                     return True
