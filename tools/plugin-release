@@ -285,8 +285,10 @@ def _do_build(repo, ver):
         if os.path.exists(os.path.join(plugin_dir, '.ignore-release')):
             f = open(os.path.join(plugin_dir, '.ignore-release'),'r')
             for line in f:
-                banned.append(line.strip())
+                if line.strip() != '':
+                    banned.append(line.strip())
 
+        print(banned)
         for ls_file in ls_files.split('\n'):
             if ls_file != '':
                 append = True
