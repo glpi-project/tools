@@ -278,6 +278,8 @@ def _do_build(repo, ver):
 
         ls_files_cmd = 'git ls-tree -r %s --name-only' % ver
         ls_files = subprocess.check_output(['git', 'ls-tree', '-r', str(ver), '--name-only'])
+        if sys.version_info[0] == 3:
+            ls_files = ls_files.decode()
 
         paths = []
 
@@ -286,7 +288,7 @@ def _do_build(repo, ver):
             for line in f:
                 banned.append(line.strip())
 
-        for ls_file in str(ls_files).split('\n'):
+        for ls_file in ls_files.split('\n'):
             if ls_file != '':
                 append = True
                 for ban in banned:
