@@ -133,7 +133,10 @@ def ask_user_confirm(msg):
     else:
         while True:
             sys.stdout.write(msg)
-            choice = input().lower()
+            if sys.version_info[0] == 3:
+                choice = input().lower()
+            else:
+                choice = raw_input().lower()
             if choice == 'y' or choice == 'yes':
                 return True
             elif choice == 'n' or choice == 'no':
