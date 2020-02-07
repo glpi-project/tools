@@ -457,7 +457,7 @@ def compile_mo(build_dir):
 def minify(build_dir, standalone = True):
     robo_path = os.path.join(plugin_dir, 'vendor', 'bin', 'robo')
     if os.path.exists(robo_path):
-        robo = [robo_path, '--load-from', os.path.join(plugin_dir, 'RoboFile.php'), 'minify']
+        robo = [robo_path, 'minify']
         if not verbose:
             robo.insert(-1, '-q')
 
