@@ -32,7 +32,7 @@ banned = [
     'tools/',
     'tests/',
     '.atoum.php',
-    '.travis.yml'
+    '.travis.yml',
     '.circleci/',
     '.ignore-release',
 ]
