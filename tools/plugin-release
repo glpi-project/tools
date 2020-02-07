@@ -31,8 +31,6 @@ banned = [
     '.travis.yml'
     '.circleci/',
     'screenshots/',
-    '*.xml',
-    '*.(png|gif|jp(e)?g)',
     '.ignore-release'
 ]
 gh_orga = 'pluginsGLPI'
