@@ -185,18 +185,19 @@ def _do_build(repo, ver):
         exists = False
         gh_id = None
 
-        try:
-            request = urllib.request.Request(url)
-            handle = urllib.request.urlopen(request)
-            contents = json.loads(handle.read())
+        if github:
+            try:
+                request = urllib.request.Request(url)
+                handle = urllib.request.urlopen(request)
+                contents = json.loads(handle.read())
 
-            for asset in contents['assets']:
-                if archive_name == asset['name']:
-                    exists = True
-                    gh_id = contents['id']
-                    break
-        except (urllib.error.URLError, urllib.error.HTTPError):
-            pass
+                for asset in contents['assets']:
+                    if archive_name == asset['name']:
+                        exists = True
+                        gh_id = contents['id']
+                        break
+            except (urllib.error.URLError, urllib.error.HTTPError):
+                pass
 
         if exists:
             #we know a release exists for this tag. Check if files have been uploaded yet
@@ -205,6 +206,7 @@ def _do_build(repo, ver):
         if not exists:
             #also check from local repo
             exists = os.path.exists(archive)
+            print(archive)
             if exists:
                 local = True
 
