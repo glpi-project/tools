@@ -118,9 +118,8 @@ def is_existing_version(ver):
     Look specified version exists
     """
     for tagref in tagrefs:
-        if valid_version(tagref.name):
-            if tagref.name == ver:
-                return True
+        if tagref.name == ver:
+            return True
     return False
 
 def ask_user_confirm(msg):
@@ -608,7 +607,7 @@ def main():
         '-d',
         '--dont-check',
         help="DO NOT check version (usefull to built archive for commit in a ci)",
-        action='store_false'
+        action='store_true'
     )
     group.add_argument(
         '-p',
@@ -712,7 +711,7 @@ def main():
         else:
             print_err('Invalid commit ref %s' % args.commit)
     elif args.release:
-        if not valid_version(args.release):
+        if not args.dont_check and not valid_version(args.release):
             print_err('%s is not a valid version number!' % args.release)
             sys.exit(1)
         else:
@@ -734,7 +733,7 @@ def main():
             )
 
     if build:
-        if not args.dont_check or (check_version(buildver) and args.check_only == False):
+        if args.dont_check or (check_version(buildver) and args.check_only == False):
             _do_build(repo, buildver)
 
 if __name__ == "__main__":
