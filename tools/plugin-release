@@ -76,13 +76,14 @@ def propose_version():
     last_major = '0'
     last_minor = '0'
 
-    tagrefs.sort(key=lambda tagref: list(map(int, tagref.name.split('.'))))
+    tagrefs.sort(key=lambda tagref: list(map(int, tagref.name.split('.'))) if valid_version(tagref.name) else [0])
     last_minor = tagrefs[-1].name
 
     for tagref in tagrefs:
-        #last major version
-        if int(tagref.name.split('.')[-1]) == 0:
-            last_major = tagref.name.replace('.0', '')
+        if valid_version(tagref.name):
+            #last major version
+            if int(tagref.name.split('.')[-1]) == 0:
+                last_major = tagref.name.replace('.0', '')
 
     if verbose:
         print('last minor: %s | last major %s' % (last_minor, last_major))
@@ -108,7 +109,7 @@ def get_latest_version():
     """
     Look for latest version
     """
-    tagrefs.sort(key=lambda tagref: list(map(int, tagref.name.split('.'))))
+    tagrefs.sort(key=lambda tagref: list(map(int, tagref.name.split('.'))) if valid_version(tagref.name) else [0])
     last = tagrefs[-1]
     return last
 
