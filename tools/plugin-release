@@ -2,7 +2,7 @@
 # Adapted from Galette release script
 
 import os, sys, argparse, re, git, subprocess
-import tarfile, shutil, gitdb, time, json
+import tarfile, shutil, gitdb, time, json, fnmatch
 if sys.version_info[0] == 3:
     import urllib.request, urllib.error, urllib.parse
 else:
@@ -10,7 +10,6 @@ else:
 from datetime import datetime
 from termcolor import colored
 from lxml import etree
-from fnmatch import fnmatch
 
 plugin_dir =  os.path.abspath(__file__).split(os.path.sep + 'vendor', 1)[0]
 dist_dir = os.path.join(
@@ -422,6 +421,30 @@ def prepare(rel_name, archive):
         )
         p1.communicate()
         os.remove(os.path.join(build_dir, 'composer.lock'))
+
+
+        #cleanup vendors
+        for root, dirnames, filenames in os.walk(os.path.join(build_dir, 'vendor')):
+            #remove git directories
+            for dirname in fnmatch.filter(dirnames, '.git*'):
+                remove_dir = os.path.join(build_dir, root, dirname)
+                shutil.rmtree(remove_dir)
+            #remove test directories
+            for dirname in fnmatch.filter(dirnames, 'test?'):
+                remove_dir = os.path.join(build_dir, root, dirname)
+                shutil.rmtree(remove_dir)
+            #remove examples directories
+            for dirname in fnmatch.filter(dirnames, 'example?'):
+                remove_dir = os.path.join(build_dir, root, dirname)
+                shutil.rmtree(remove_dir)
+            #remove doc directories
+            for dirname in fnmatch.filter(dirnames, 'doc?'):
+                remove_dir = os.path.join(build_dir, root, dirname)
+                shutil.rmtree(remove_dir)
+            #remove composer stuff
+            for filename in fnmatch.filter(filenames, 'composer*'):
+                remove_file = os.path.join(build_dir, root, filename)
+                os.remove(remove_file)
 
     compile_mo(build_dir)
 
