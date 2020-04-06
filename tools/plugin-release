@@ -420,8 +420,6 @@ def prepare(rel_name, archive):
             cwd=build_dir
         )
         p1.communicate()
-        os.remove(os.path.join(build_dir, 'composer.lock'))
-
 
         #cleanup vendors
         for root, dirnames, filenames in os.walk(os.path.join(build_dir, 'vendor')):
@@ -445,6 +443,14 @@ def prepare(rel_name, archive):
             for filename in fnmatch.filter(filenames, 'composer*'):
                 remove_file = os.path.join(build_dir, root, filename)
                 os.remove(remove_file)
+
+        p2 = subprocess.Popen(
+            ['composer', 'dump-autoload', '-o', '--no-dev'],
+            cwd=build_dir
+        )
+        p2.communicate()
+
+        os.remove(os.path.join(build_dir, 'composer.lock'))
 
     compile_mo(build_dir)
 
