@@ -4,7 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.1.10] - 2020-04-03
+## [0.1.12] - 2020-04-06
+- Fix missing test classes in classmap
+
+## [0.1.11] - 2020-04-03
 - Remove vendor useless files
 
 ## [0.1.10] - 2020-04-02
