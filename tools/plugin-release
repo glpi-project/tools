@@ -273,8 +273,7 @@ def _do_build(repo, ver):
                 archive
             ))
 
-        ls_files_cmd = 'git ls-tree -r %s --name-only' % ver
-        ls_files = subprocess.check_output(['git', 'ls-tree', '-r', str(ver), '--name-only'])
+        ls_files = subprocess.check_output(['git', 'ls-tree', '-r', str(typever), '--name-only'])
         if sys.version_info[0] == 3:
             ls_files = ls_files.decode()
 
