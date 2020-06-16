@@ -258,14 +258,14 @@ def _do_build(repo, ver):
     else:
         print('Building %s...' % rel_name)
 
+        typestr = 'Tag'
+        typever = ver
+
+        if commit and extra:
+            typestr = 'Commit'
+            typever = commit
+
         if verbose:
-            typestr = 'Tag'
-            typever = ver
-
-            if commit and extra:
-                typestr = 'Commit'
-                typever = commit
-
             print('Release name: %s, %s: %s, Dest: %s' % (
                 rel_name,
                 typestr,
