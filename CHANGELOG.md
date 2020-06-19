@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.1.13] - 2020-06-17
+- Fix release build when using --commit option
+- Disable minification (bugged)
+
 ## [0.1.12] - 2020-04-06
 - Fix missing test classes in classmap
 
