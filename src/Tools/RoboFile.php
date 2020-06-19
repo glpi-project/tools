@@ -28,6 +28,9 @@ class RoboFile extends \Robo\Tasks
     * @return void
     */
    public function minifyCSS() {
+      //robo minify relies on a lib that has not been updated for ages. Q&D fix.
+      return $this;
+
       $css_dir = './css';
       if (is_dir($css_dir)) {
          foreach (glob("$css_dir/*.css") as $css_file) {
@@ -48,6 +51,9 @@ class RoboFile extends \Robo\Tasks
     * @return void
     */
    public function minifyJS() {
+      //robo minify relies on a lib that has not been updated for ages. Q&D fix.
+      return $this;
+
       $js_dir = './js';
       if (is_dir($js_dir)) {
          foreach (glob("$js_dir/*.js") as $js_file) {
