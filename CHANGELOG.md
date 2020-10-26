@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.1.14] - 2020-10-26
+- Permit usage of consolidation/robo 2.x (PHP 7.4 compatibility)
+- Call npm install if package.json exists
+
 ## [0.1.13] - 2020-06-17
 - Fix release build when using --commit option
 - Disable minification (bugged)

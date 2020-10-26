@@ -408,7 +408,7 @@ def prepare(rel_name, archive):
     build_dir = os.path.join(src_dir, plugin_name)
 
     print('Adding vendor libraries')
-    if os.path.exists(os.path.join(build_dir, 'composer.lock')):
+    if os.path.exists(os.path.join(build_dir, 'composer.json')):
         composer = ['composer', 'install', '-o', '--no-dev']
 
         if not verbose:
@@ -449,7 +449,24 @@ def prepare(rel_name, archive):
         )
         p2.communicate()
 
-        os.remove(os.path.join(build_dir, 'composer.lock'))
+        if os.path.exists(os.path.join(build_dir, 'composer.lock')):
+            os.remove(os.path.join(build_dir, 'composer.lock'))
+
+    if os.path.exists(os.path.join(build_dir, 'package.json')):
+        npm = ['npm', 'install']
+
+        p = subprocess.Popen(
+            npm,
+            cwd=build_dir
+        )
+        p.communicate()
+
+        # assume that npm install triggers build of required libs on postinstall event (using webpack for instance)
+        # node_modules directory should not be packages into plugin
+        shutil.rmtree(os.path.join(build_dir, 'node_modules'))
+        
+        if os.path.exists(os.path.join(build_dir, 'package-lock.json')):
+            os.remove(os.path.join(build_dir, 'package-lock.json'))
 
     compile_mo(build_dir)
 
