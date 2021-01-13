@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.1.15] - not released
+- Add licence-headers-check command in replacement of modify_headers.pl script
+
 ## [0.1.14] - 2020-10-26
 - Permit usage of consolidation/robo 2.x (PHP 7.4 compatibility)
 - Call npm install if package.json exists
@@ -27,7 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Python3 compatible
 
 ## [0.1.8] - 2019-06-07
-- Fix encoding issues ith release script
+- Fix encoding issues with release script
 
 ## [0.1.7] - 2019-05-02
 - Add switch to ignore version checking
