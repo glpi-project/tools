@@ -1,0 +1,16 @@
+name: "Build package"
+description: "Build a plugin's package"
+inputs:
+  plugin-version:
+    description: "Plugin version to release"
+    required: true
+outputs:
+  package-basename: 
+    description: "Built package basename"
+  package-path: 
+    description: "Built package path"
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  env:
+    PLUGIN_VERSION: ${{ inputs.plugin-version }}
