@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.1.15] - not released
+## [0.1.15] - 2020-01-16
 - Add licence-headers-check command in replacement of modify_headers.pl script
 - Add plugin package building Github action
 
