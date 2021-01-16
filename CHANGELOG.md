@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.1.15] - not released
 - Add licence-headers-check command in replacement of modify_headers.pl script
+- Add plugin package building Github action
 
 ## [0.1.14] - 2020-10-26
 - Permit usage of consolidation/robo 2.x (PHP 7.4 compatibility)
