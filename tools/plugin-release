@@ -763,6 +763,7 @@ def main():
             #check if specified version exists
             if not is_existing_version(args.release):
                 print_err('%s does not exist!' % args.release)
+                sys.exit(1)
             else:
                 build = True
                 buildver = args.release
