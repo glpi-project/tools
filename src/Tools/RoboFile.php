@@ -11,6 +11,7 @@ class RoboFile extends \Robo\Tasks
 {
    protected $csignore = ['/vendor/'];
    protected $csfiles  = ['./'];
+   protected $headerTemplate;
 
    /**
     * Minify all
@@ -145,7 +146,7 @@ class RoboFile extends \Robo\Tasks
     * @option $strict  Show warnings as well as errors.
     *    Default is to show only errors.
     *
-    *    @return void
+    * @return void
     */
    public function codeCs(
       $file = null,
@@ -180,7 +181,6 @@ class RoboFile extends \Robo\Tasks
       return $result;
    }
 
-
    /**
     * Checks if a string ends with another string
     *
@@ -197,5 +197,42 @@ class RoboFile extends \Robo\Tasks
       }
 
       return (substr($haystack, -$length) === $needle);
+   }
+
+   /**
+    * Update headers in source files
+    */
+   public function codeHeadersUpdate() {
+      $sourceHeader = $this->getSourceHeader();
+      $git = $this->getGit(getcwd());
+
+      $template = $git->getFileFromGit('tools/HEADER');
+      $sourceHeader->setHeaderTemplate($template);
+
+      $toUpdate = $git->getTrackedFiles();
+      foreach ($toUpdate as $file) {
+         $sourceHeader->replaceSourceHeader($file);
+      }
+   }
+
+   /**
+    * return a Git instance configured tu run with the project's repo
+    * Overridable
+    *
+    * @return \Glpi\Tools\Git
+    */
+   protected function getGit($directory) {
+      return new Git($directory);
+      return new Git(__DIR__ . '/../../../../../..');
+   }
+
+   /**
+    * return an instance of SourceHeader to manipulate headers in source code
+    * Overridable
+    *
+    * @return \Glpi\Tools\SourceHeader
+    */
+   protected function getSourceHeader() {
+      return new SourceHeader();
    }
 }
