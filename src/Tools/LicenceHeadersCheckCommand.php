@@ -329,7 +329,7 @@ class LicenceHeadersCheckCommand extends Command {
             if ($this->exclusion_pattern !== null && preg_match($this->exclusion_pattern, $this->getRealPath())) {
                return false;
             }
-            if ($this->isFile() && !preg_match('/^(css|js|php|pl|scss|sql|ya?ml)$/', $this->getExtension())) {
+            if ($this->isFile() && !preg_match('/^(css|js|php|pl|scss|sh|sql|ya?ml)$/', $this->getExtension())) {
                return false;
             }
             return true;
