@@ -444,6 +444,7 @@ class LicenceHeadersCheckCommand extends Command {
          $excluded_elements = [
             '\.git',
             '\.github', // Github specific files
+            '\.travis.yml', // Travis config
             '\.tx', // Transifex config
 
             'dist', // Plugin archives
