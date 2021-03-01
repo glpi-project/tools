@@ -27,8 +27,6 @@
     "require": {
         "consolidation/robo": "^2.0 || ^3.0",
         "glpi-project/coding-standard": "^0.8",
-        "natxet/cssmin": "^3.0",
-        "patchwork/jsqueeze": "^1.0",
         "symfony/console": "^4.4 || ^5.0"
     }
 }
