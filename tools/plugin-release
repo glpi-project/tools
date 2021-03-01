@@ -470,8 +470,6 @@ def prepare(rel_name, archive):
 
     compile_mo(build_dir)
 
-    minify(build_dir, False)
-
     plugin = tarfile.open(archive, 'w|bz2')
 
     for i in os.listdir(src_dir):
@@ -497,27 +495,6 @@ def compile_mo(build_dir):
                     cwd=locales_dir
                 )
                 p1.communicate()
-
-def minify(build_dir, standalone = True):
-    robo_path = os.path.join(plugin_dir, 'vendor', 'bin', 'robo')
-    if os.path.exists(robo_path):
-        robo = [robo_path, 'minify']
-        if not verbose:
-            robo.insert(-1, '-q')
-
-        if verbose:
-            print(robo)
-
-        p1 = subprocess.Popen(
-            robo,
-            cwd=build_dir
-        )
-        p1.communicate()
-    else:
-        print_err("Robo.li is not installed; cannot minify!")
-
-    if not standalone and os.path.exists(os.path.join(build_dir, 'RoboFile.php')):
-        os.remove(os.path.join(build_dir, 'RoboFile.php'))
 
 def valid_commit(repo, c):
     """
@@ -677,12 +654,6 @@ def main():
         action='store_true'
     )
     parser.add_argument(
-        '-M',
-        '--minify',
-        help="Minify CSS ans JS files",
-        action='store_true'
-    )
-    parser.add_argument(
         '-S',
         '--nosign',
         help="Do not sign release tarball",
@@ -710,7 +681,7 @@ def main():
     if verbose:
         print(args)
 
-    if not args.compile_mo and not args.minify and not args.propose:
+    if not args.compile_mo and not args.propose:
         if github:
             import github
             gh_cred_file = os.path.join(plugin_dir, '.gh_token')
@@ -738,11 +709,8 @@ def main():
 
     build = False
     buildver = None
-    if args.compile_mo or args.minify:
-        if args.compile_mo:
-            compile_mo(plugin_dir)
-        if args.minify:
-            minify(plugin_dir)
+    if args.compile_mo:
+        compile_mo(plugin_dir)
     elif (args.extra or args.commit) and (not args.extra or not args.commit or not args.release):
         print_err('You have to specify --version --commit and --extra all together')
         sys.exit(1)

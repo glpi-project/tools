@@ -13,62 +13,6 @@ class RoboFile extends \Robo\Tasks
    protected $csfiles  = ['./'];
 
    /**
-    * Minify all
-    *
-    * @return void
-    */
-   public function minify() {
-      $this->minifyCSS()
-         ->minifyJS();
-   }
-
-   /**
-    * Minify CSS stylesheets
-    *
-    * @return void
-    */
-   public function minifyCSS() {
-      //robo minify relies on a lib that has not been updated for ages. Q&D fix.
-      return $this;
-
-      $css_dir = './css';
-      if (is_dir($css_dir)) {
-         foreach (glob("$css_dir/*.css") as $css_file) {
-            if (!$this->endsWith($css_file, 'min.css')) {
-               $this->taskMinify($css_file)
-                  ->to(str_replace('.css', '.min.css', $css_file))
-                  ->type('css')
-                  ->run();
-            }
-         }
-      }
-      return $this;
-   }
-
-   /**
-    * Minify JavaScript files stylesheets
-    *
-    * @return void
-    */
-   public function minifyJS() {
-      //robo minify relies on a lib that has not been updated for ages. Q&D fix.
-      return $this;
-
-      $js_dir = './js';
-      if (is_dir($js_dir)) {
-         foreach (glob("$js_dir/*.js") as $js_file) {
-            if (!$this->endsWith($js_file, 'min.js')) {
-               $this->taskMinify($js_file)
-                  ->to(str_replace('.js', '.min.js', $js_file))
-                  ->type('js')
-                  ->run();
-            }
-         }
-      }
-      return $this;
-   }
-
-   /**
     * Extract translatable strings
     *
     * @return void
