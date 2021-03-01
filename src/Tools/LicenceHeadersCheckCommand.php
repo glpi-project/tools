@@ -329,7 +329,7 @@ class LicenceHeadersCheckCommand extends Command {
             if ($this->exclusion_pattern !== null && preg_match($this->exclusion_pattern, $this->getRealPath())) {
                return false;
             }
-            if ($this->isFile() && !preg_match('/^(css|js|php|pl|scss|sql|ya?ml)$/', $this->getExtension())) {
+            if ($this->isFile() && !preg_match('/^(css|js|php|pl|scss|sh|sql|ya?ml)$/', $this->getExtension())) {
                return false;
             }
             return true;
@@ -444,6 +444,7 @@ class LicenceHeadersCheckCommand extends Command {
          $excluded_elements = [
             '\.git',
             '\.github', // Github specific files
+            '\.travis.yml', // Travis config
             '\.tx', // Transifex config
 
             'dist', // Plugin archives
