@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.1.16] - 2021-03-03
+- Enhance license headers check
+- Enable usage of Robo 3.x, drop usage of Robo 1.x
+- Remove disabled minification tasks
+
 ## [0.1.15] - 2020-01-18
 - Add licence-headers-check command in replacement of modify_headers.pl script
 - Add plugin package building Github action
