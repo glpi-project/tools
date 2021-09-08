@@ -142,6 +142,13 @@ class LicenceHeadersCheckCommand extends Command {
                $header_start_pattern   = '/^(--|#( \/\*\*)?)$/'; // older headers were starting by "# /**"
                $header_content_pattern = '/^(--|#)/'; // older headers were prefixed by "#"
                break;
+            case 'css':
+               $header_line_prefix     = ' * ';
+               $header_prepend_line    = "/*!\n";
+               $header_append_line     = " */\n";
+               $header_start_pattern   = '/^\/\*(\!|\*)?$/'; // older headers were starting by "/**"
+               $header_content_pattern = '/^\s*\*/';
+               break;
             default:
                $header_line_prefix     = ' * ';
                $header_prepend_line    = "/**\n";
@@ -194,7 +201,7 @@ class LicenceHeadersCheckCommand extends Command {
             $header_append_line
          );
 
-         $header_outdated = $updated_header_lines !== $current_header_lines;
+         $header_outdated = array_slice($updated_header_lines, 1, -1) !== array_slice($current_header_lines, 1, -1);
 
          if (!$header_missing && !$header_outdated) {
             continue;
