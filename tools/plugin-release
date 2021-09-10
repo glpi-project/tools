@@ -248,7 +248,7 @@ def _do_build(repo, ver):
             loctxt = ''
             if ascLocal:
                 loctxt = ' locally'
-            if msg is not '':
+            if msg != '':
                 msg += ' and has been %ssigned!' % loctxt
             else:
                 msg += 'Release has been %ssigned!' % loctxt
