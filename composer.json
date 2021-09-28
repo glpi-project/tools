@@ -25,7 +25,6 @@
       "tools/plugin-release"
     ],
     "require": {
-        "consolidation/robo": "^2.0 || ^3.0",
         "glpi-project/coding-standard": "^0.8",
         "symfony/console": "^4.4 || ^5.0"
     }
