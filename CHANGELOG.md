@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.3.0] - 2021-10-07
+- Latest coding standards
+
+## [0.2.0] - 2021-09-28
+- Do not check `css/lib` and `tests/config` in licence-headers-check command
+- Handle CSSO preserved comments
+- Remove consolidation/robo task runner
+- Fix "is not" with literal SyntaxWarning
+
 ## [0.1.16] - 2021-03-03
 - Enhance license headers check
 - Enable usage of Robo 3.x, drop usage of Robo 1.x
