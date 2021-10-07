@@ -332,7 +332,7 @@ class LicenceHeadersCheckCommand extends Command {
             parent::__construct($iterator);
          }
 
-         public function accept() {
+         public function accept(): bool {
             if ($this->exclusion_pattern !== null && preg_match($this->exclusion_pattern, $this->getRealPath())) {
                return false;
             }
@@ -342,7 +342,7 @@ class LicenceHeadersCheckCommand extends Command {
             return true;
          }
 
-         public function getChildren() {
+         public function getChildren(): ?RecursiveFilterIterator {
             return new self($this->getInnerIterator()->getChildren(), $this->exclusion_pattern);
          }
       };
