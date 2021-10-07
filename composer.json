@@ -25,7 +25,7 @@
       "tools/plugin-release"
     ],
     "require": {
-        "glpi-project/coding-standard": "^0.8",
+        "glpi-project/coding-standard": "^0.9",
         "symfony/console": "^4.4 || ^5.0"
     }
 }

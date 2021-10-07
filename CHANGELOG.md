@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.3.0] - 2021-10-07
+- Latest coding standards
+
 ## [0.2.0] - 2021-09-28
 - Do not check `css/lib` and `tests/config` in licence-headers-check command
 - Handle CSSO preserved comments
