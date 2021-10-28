@@ -149,6 +149,13 @@ class LicenceHeadersCheckCommand extends Command {
                $header_start_pattern   = '/^\/\*(\!|\*)?$/'; // older headers were starting by "/**"
                $header_content_pattern = '/^\s*\*/';
                break;
+            case 'twig':
+               $header_line_prefix     = ' # ';
+               $header_prepend_line    = "{#\n";
+               $header_append_line     = " #}\n";
+               $header_start_pattern   = '/^\{#$/';
+               $header_content_pattern = '/^\s*#/';
+               break;
             default:
                $header_line_prefix     = ' * ';
                $header_prepend_line    = "/**\n";
@@ -336,7 +343,7 @@ class LicenceHeadersCheckCommand extends Command {
             if ($this->exclusion_pattern !== null && preg_match($this->exclusion_pattern, $this->getRealPath())) {
                return false;
             }
-            if ($this->isFile() && !preg_match('/^(css|js|php|pl|scss|sh|sql|ya?ml)$/', $this->getExtension())) {
+            if ($this->isFile() && !preg_match('/^(css|js|php|pl|scss|sh|sql|twig|ya?ml)$/', $this->getExtension())) {
                return false;
             }
             return true;
