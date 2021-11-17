@@ -452,44 +452,45 @@ class LicenceHeadersCheckCommand extends Command {
     * @return string
     */
    protected function getExclusionPattern(string $directory): ?string {
-      $excluded_elements = [];
+      $excluded_elements = [
+         '\.dependabot', // Dependabot config
+         '\.git',
+         '\.github', // Github specific files
+         '\.gitlab-ci.yml', // Gitlab config
+         '\.travis.yml', // Travis config
+         '\.tx', // Transifex config
+
+         'lib', // Manually included libs
+         'node_modules', // npm imported libs
+         'vendor', // composer imported libs
+
+         'public\/lib', // libs packaged using webpack
+      ];
       if (file_exists($directory . DIRECTORY_SEPARATOR . 'setup.php')
           && file_exists($directory . DIRECTORY_SEPARATOR . 'hook.php')) {
          // Directory is a plugin root directory
-         $excluded_elements = [
-            '\.git',
-            '\.github', // Github specific files
-            '\.travis.yml', // Travis config
-            '\.tx', // Transifex config
-
-            'dist', // Plugin archives
-
-            'lib', // Manually included libs
-            'node_modules', // npm imported libs
-            'vendor', // composer imported libs
-
-            'public\/lib', // libs packaged using webpack
-         ];
+         $excluded_elements = array_merge(
+            $excluded_elements,
+            [
+                'dist', // Plugin archives
+            ]
+         );
       } else if (file_exists($directory . DIRECTORY_SEPARATOR . 'composer.json')
                  && preg_match('/"name"\s*:\s*"glpi\/glpi"/', file_get_contents($directory . DIRECTORY_SEPARATOR . 'composer.json'))) {
          // Directory is GLPI root directory
-         $excluded_elements = [
-            '\.dependabot',
-            '\.git',
-            '\.github',
-            'config',
-            'css\/lib',
-            'files',
-            'lib',
-            'marketplace',
-            'node_modules',
-            'plugins',
-            'public\/lib',
-            'tests\/config',
-            'tests\/config_db\.php',
-            'tests\/files',
-            'vendor',
-         ];
+         $excluded_elements = array_merge(
+            $excluded_elements,
+            [
+               'config',
+               'css\/lib',
+               'files',
+               'marketplace',
+               'plugins',
+               'tests\/config',
+               'tests\/config_db\.php',
+               'tests\/files',
+            ]
+         );
       }
 
       if (empty($excluded_elements)) {
