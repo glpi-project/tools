@@ -229,9 +229,16 @@ class LicenceHeadersCheckCommand extends Command {
          }
 
          if ($input->getOption('fix')) {
-            $file_contents = implode('', $this->stripEmptyLines($pre_header_lines, false, true))
-               . implode('', $updated_header_lines) . "\n"
-               . implode('', $this->stripEmptyLines($post_header_lines, true, false));
+            $pre_header_lines  = $this->stripEmptyLines($pre_header_lines, false, true);
+            $post_header_lines = $this->stripEmptyLines($post_header_lines, true, false);
+
+            $file_contents = '';
+            if (!empty($pre_header_lines)) {
+               $file_contents .= implode('', $pre_header_lines) . "\n";
+            }
+            $file_contents .= implode('', $updated_header_lines) . "\n";
+            $file_contents .= implode('', $post_header_lines);
+
             if (strlen($file_contents) !== file_put_contents($filename, $file_contents)) {
                $output->writeln(
                   '<error>' . sprintf('Unable to update licence header in file "%s".', $filename) . '</error>',
@@ -280,7 +287,7 @@ class LicenceHeadersCheckCommand extends Command {
    }
 
    /**
-    * Get lincence header lines.
+    * Get licence header lines.
     *
     * @param string $header_file_path
     * @param string $line_prefix
