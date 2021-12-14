@@ -143,6 +143,7 @@ class LicenceHeadersCheckCommand extends Command {
                $header_content_pattern = '/^(--|#)/'; // older headers were prefixed by "#"
                break;
             case 'css':
+            case 'scss':
                $header_line_prefix     = ' * ';
                $header_prepend_line    = "/*!\n";
                $header_append_line     = " */\n";
