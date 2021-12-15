@@ -79,6 +79,7 @@ xgettext `(cd $WORKING_DIR && find -regextype posix-egrep -not -regex $EXCLUDE_R
     --from-code=UTF-8 \
     --force-po \
     --join-existing \
+    --sort-output \
     --keyword=_n:$F_ARGS_N \
     --keyword=__s:$F_ARGS__S \
     --keyword=__:$F_ARGS__ \
@@ -95,6 +96,7 @@ xgettext `(cd $WORKING_DIR && find -regextype posix-egrep -not -regex $EXCLUDE_R
     --from-code=UTF-8 \
     --force-po \
     --join-existing \
+    --sort-output \
     --keyword=_n:$F_ARGS_N \
     --keyword=__:$F_ARGS__ \
     --keyword=_x:$F_ARGS_X \
@@ -119,6 +121,7 @@ do
         --from-code=UTF-8 \
         --force-po \
         --join-existing \
+        --sort-output \
         --keyword=_n:$F_ARGS_N \
         --keyword=__:$F_ARGS__ \
         --keyword=_x:$F_ARGS_X \
