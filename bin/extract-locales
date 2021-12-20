@@ -1,0 +1,133 @@
+#!/bin/bash
+
+#
+# ---------------------------------------------------------------------
+# GLPI - Gestionnaire Libre de Parc Informatique
+# Copyright (C) 2015-2021 Teclib' and contributors.
+#
+# http://glpi-project.org
+#
+# based on GLPI - Gestionnaire Libre de Parc Informatique
+# Copyright (C) 2003-2014 by the INDEPNET Development Team.
+#
+# ---------------------------------------------------------------------
+#
+# LICENSE
+#
+# This file is part of GLPI.
+#
+# GLPI is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# GLPI is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GLPI. If not, see <http://www.gnu.org/licenses/>.
+# ---------------------------------------------------------------------
+#
+
+SCRIPT_DIR=$(dirname $0)
+WORKING_DIR=$(readlink -f "$SCRIPT_DIR/../..") # Script will be executed from "vendor/bin" directory
+
+# Define translate function args
+F_ARGS_N="1,2"
+F_ARGS__S="1"
+F_ARGS__="1"
+F_ARGS_X="1c,2"
+F_ARGS_SX="1c,2"
+F_ARGS_NX="1c,2,3"
+F_ARGS_SN="1,2"
+
+# Compute POT filename
+if [ -f "$WORKING_DIR/setup.php" ]; then
+    # setup.php found: it's a plugin.
+    NAME="$(grep -m1 "PLUGIN_.*_VERSION" $WORKING_DIR/setup.php | cut -d _ -f 2)"
+    EXCLUDE_REGEX="^.\/(\..*|(libs?|node_modules|tests|vendor)\/).*"
+
+    # Only strings with domain specified are extracted (use Xt args of keyword param to set number of args needed)
+    F_ARGS_N="$F_ARGS_N,4t"
+    F_ARGS__S="$F_ARGS__S,2t"
+    F_ARGS__="$F_ARGS__,2t"
+    F_ARGS_X="$F_ARGS_X,3t"
+    F_ARGS_SX="$F_ARGS_SX,3t"
+    F_ARGS_NX="$F_ARGS_NX,5t"
+    F_ARGS_SN="$F_ARGS_SN,4t"
+else
+    # using core most probably
+    NAME="GLPI"
+    EXCLUDE_REGEX="^.\/(\..*|(config|files|lib|marketplace|node_modules|plugins|public|tests|tools|vendor)\/).*"
+fi;
+POTFILE="locales/${NAME,,}.pot"
+
+# Clean existing POT file
+if [ ! -d "$WORKING_DIR/locales" ]; then
+    mkdir $WORKING_DIR/locales
+fi
+
+rm -f $POTFILE && touch $POTFILE
+
+# Append locales from PHP
+xgettext `(cd $WORKING_DIR && find -regextype posix-egrep -not -regex $EXCLUDE_REGEX -type f -name "*.php")` \
+    -o $POTFILE \
+    -L PHP \
+    --add-comments=TRANS \
+    --from-code=UTF-8 \
+    --force-po \
+    --join-existing \
+    --sort-output \
+    --keyword=_n:$F_ARGS_N \
+    --keyword=__s:$F_ARGS__S \
+    --keyword=__:$F_ARGS__ \
+    --keyword=_x:$F_ARGS_X \
+    --keyword=_sx:$F_ARGS_SX \
+    --keyword=_nx:$F_ARGS_NX \
+    --keyword=_sn:$F_ARGS_SN
+
+# Append locales from JavaScript
+xgettext `(cd $WORKING_DIR && find -regextype posix-egrep -not -regex $EXCLUDE_REGEX -type f -name "*.js" -not -name "*.min.js")` \
+    -o $POTFILE \
+    -L JavaScript \
+    --add-comments=TRANS \
+    --from-code=UTF-8 \
+    --force-po \
+    --join-existing \
+    --sort-output \
+    --keyword=_n:$F_ARGS_N \
+    --keyword=__:$F_ARGS__ \
+    --keyword=_x:$F_ARGS_X \
+    --keyword=_nx:$F_ARGS_NX \
+    --keyword=i18n._n:$F_ARGS_N \
+    --keyword=i18n.__:$F_ARGS__ \
+    --keyword=i18n._p:$F_ARGS_X \
+    --keyword=i18n.ngettext:$F_ARGS_N \
+    --keyword=i18n.gettext:$F_ARGS__ \
+    --keyword=i18n.pgettext:$F_ARGS_X
+
+# Append locales from Twig templates
+for file in $(cd $WORKING_DIR && find -regextype posix-egrep -not -regex $EXCLUDE_REGEX -type f -name "*.twig")
+do
+    # 1. Convert file content to replace "{{ function(.*) }}" by "<?php function(.*); ?>" and extract strings via std input
+    # 2. Replace "standard input:line_no" by file location in po file comments
+    contents=`cat $file | sed -r "s|\{\{\s*([a-z0-9_]+\(.*\))\s*\}\}|<?php \1; ?>|gi"`
+    cat $file | perl -0pe "s/\{\{(.*?)\}\}/<?php \1; ?>/gism" | xgettext - \
+        -o $POTFILE \
+        -L PHP \
+        --add-comments=TRANS \
+        --from-code=UTF-8 \
+        --force-po \
+        --join-existing \
+        --sort-output \
+        --keyword=_n:$F_ARGS_N \
+        --keyword=__:$F_ARGS__ \
+        --keyword=_x:$F_ARGS_X \
+        --keyword=_nx:$F_ARGS_NX
+    sed -i -r "s|standard input:([0-9]+)|`echo $file | sed "s|./||"`:\1|g" $POTFILE
+done
+
+# Update main language
+LANG=C msginit --no-translator -i $POTFILE -l en_GB -o $WORKING_DIR/locales/en_GB.po

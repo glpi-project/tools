@@ -124,6 +124,10 @@ class LicenceHeadersCheckCommand extends Command {
             OutputInterface::VERBOSITY_VERY_VERBOSE
          );
 
+         $header_start_pattern   = null;
+         $header_end_pattern     = null;
+         $header_content_pattern = null;
+
          switch (pathinfo($filename, PATHINFO_EXTENSION)) {
             case 'pl':
             case 'sh':
@@ -132,42 +136,48 @@ class LicenceHeadersCheckCommand extends Command {
                $header_line_prefix     = '# ';
                $header_prepend_line    = "#\n";
                $header_append_line     = "#\n";
-               $header_start_pattern   = '/^#( \/\*\*)?$/'; // older headers were starting by "# /**"
+               $header_start_pattern   = '/^#[^!]/'; // Any commented line except shebang (#!)
                $header_content_pattern = '/^#/';
                break;
             case 'sql':
                $header_line_prefix     = '-- ';
                $header_prepend_line    = "--\n";
                $header_append_line     = "--\n";
-               $header_start_pattern   = '/^(--|#( \/\*\*)?)$/'; // older headers were starting by "# /**"
                $header_content_pattern = '/^(--|#)/'; // older headers were prefixed by "#"
                break;
             case 'css':
+            case 'scss':
                $header_line_prefix     = ' * ';
                $header_prepend_line    = "/*!\n";
                $header_append_line     = " */\n";
-               $header_start_pattern   = '/^\/\*(\!|\*)?$/'; // older headers were starting by "/**"
-               $header_content_pattern = '/^\s*\*/';
+               $header_start_pattern   = '/^\/\*(\!|\*)?$/'; // older headers were starting by "/**" or "/*!"
+               $header_end_pattern     = '/^\s*\*\//';
                break;
             case 'twig':
                $header_line_prefix     = ' # ';
                $header_prepend_line    = "{#\n";
                $header_append_line     = " #}\n";
                $header_start_pattern   = '/^\{#$/';
-               $header_content_pattern = '/^\s*#/';
+               $header_end_pattern     = '/^\s*#}/';
                break;
             default:
                $header_line_prefix     = ' * ';
                $header_prepend_line    = "/**\n";
                $header_append_line     = " */\n";
                $header_start_pattern   = '/^\/\*\*?$/';
-               $header_content_pattern = '/^\s*\*/';
+               $header_end_pattern     = '/^\s*\*\//';
                break;
+         }
+
+         if ($header_start_pattern === null) {
+            // If there is no specific "start pattern", then first regular comment line is consider are header start.
+            $header_start_pattern = $header_content_pattern;
          }
 
          $header_found         = false;
          $header_missing       = false;
          $is_header_line       = false;
+         $is_last_header_line  = false;
          $pre_header_lines     = [];
          $current_header_lines = [];
          $post_header_lines    = [];
@@ -187,7 +197,14 @@ class LicenceHeadersCheckCommand extends Command {
                   // consider that header is missing.
                   $header_missing = true;
                }
-            } else if ($is_header_line && !preg_match($header_content_pattern, $line)) {
+            } else if ($is_last_header_line) {
+               // Previous line was "last header line", so current line is the first line after licence header
+               $is_last_header_line = false;
+               $is_header_line = false;
+            } else if ($is_header_line && $header_end_pattern !== null && preg_match($header_end_pattern, $line)) {
+               // Line matches header end pattern
+               $is_last_header_line = true;
+            } else if ($is_header_line && $header_content_pattern !== null && !preg_match($header_content_pattern, $line)) {
                // Line does not match header, so it is the first line after licence header
                $is_header_line = false;
             }
@@ -229,9 +246,16 @@ class LicenceHeadersCheckCommand extends Command {
          }
 
          if ($input->getOption('fix')) {
-            $file_contents = implode('', $this->stripEmptyLines($pre_header_lines, false, true))
-               . implode('', $updated_header_lines) . "\n"
-               . implode('', $this->stripEmptyLines($post_header_lines, true, false));
+            $pre_header_lines  = $this->stripEmptyLines($pre_header_lines, false, true);
+            $post_header_lines = $this->stripEmptyLines($post_header_lines, true, false);
+
+            $file_contents = '';
+            if (!empty($pre_header_lines)) {
+               $file_contents .= implode('', $pre_header_lines) . "\n";
+            }
+            $file_contents .= implode('', $updated_header_lines) . "\n";
+            $file_contents .= implode('', $post_header_lines);
+
             if (strlen($file_contents) !== file_put_contents($filename, $file_contents)) {
                $output->writeln(
                   '<error>' . sprintf('Unable to update licence header in file "%s".', $filename) . '</error>',
@@ -280,7 +304,7 @@ class LicenceHeadersCheckCommand extends Command {
    }
 
    /**
-    * Get lincence header lines.
+    * Get licence header lines.
     *
     * @param string $header_file_path
     * @param string $line_prefix
