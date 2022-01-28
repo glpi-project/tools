@@ -151,21 +151,21 @@ class LicenceHeadersCheckCommand extends Command {
                $header_prepend_line    = "/*!\n";
                $header_append_line     = " */\n";
                $header_start_pattern   = '/^\/\*(\!|\*)?$/'; // older headers were starting by "/**" or "/*!"
-               $header_end_pattern     = '/^\s*\*\//';
+               $header_end_pattern     = '/\*\//';
                break;
             case 'twig':
                $header_line_prefix     = ' # ';
                $header_prepend_line    = "{#\n";
                $header_append_line     = " #}\n";
                $header_start_pattern   = '/^\{#$/';
-               $header_end_pattern     = '/^\s*#}/';
+               $header_end_pattern     = '/#}/';
                break;
             default:
                $header_line_prefix     = ' * ';
                $header_prepend_line    = "/**\n";
                $header_append_line     = " */\n";
                $header_start_pattern   = '/^\/\*\*?$/';
-               $header_end_pattern     = '/^\s*\*\//';
+               $header_end_pattern     = '/\*\//';
                break;
          }
 
