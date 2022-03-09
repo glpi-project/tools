@@ -32,7 +32,13 @@
 #
 
 SCRIPT_DIR=$(dirname $0)
-WORKING_DIR=$(readlink -f "$SCRIPT_DIR/../..") # Script will be executed from "vendor/bin" directory
+if [[ "$SCRIPT_DIR" == *"/vendor/glpi-project/tools"* ]]; then
+    # Script is executed from "vendor/glpi-project/tools/bin" directory
+    WORKING_DIR=$(readlink -f "$SCRIPT_DIR/../../../..")
+else
+    # Script is executed from "vendor/bin" directory
+    WORKING_DIR=$(readlink -f "$SCRIPT_DIR/../..")
+fi;
 
 # Define translate function args
 F_ARGS_N="1,2"
