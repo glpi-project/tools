@@ -68,17 +68,49 @@ else
     NAME="GLPI"
     EXCLUDE_REGEX="^.\/(\..*|(config|files|lib|marketplace|node_modules|plugins|public|tests|tools|vendor)\/).*"
 fi;
-POTFILE="locales/${NAME,,}.pot"
+POTFILE="$WORKING_DIR/locales/${NAME,,}.pot"
 
-# Clean existing POT file
 if [ ! -d "$WORKING_DIR/locales" ]; then
     mkdir $WORKING_DIR/locales
 fi
 
+# Clean existing POT file
 rm -f $POTFILE && touch $POTFILE
 
+# Append locales from Twig templates
+# It have to be executed first as the use of `--add-location=file` will remove line numbers
+# from all previous locations, including those which that may be added from PHP/JS files.
+
+if [ -d "$WORKING_DIR/templates" ]; then
+    ## 1. Transform twig files and save them into temp dir
+    TEMP_TWIG_DIR=$(mktemp -d -t glpi-locales-XXXXXXXX)
+    mkdir -p "$TEMP_TWIG_DIR/templates"
+    $SCRIPT_DIR/compile-twig-templates --quiet $WORKING_DIR/templates $TEMP_TWIG_DIR/templates
+
+    ## 2. Extract string from transformed files
+    cd $TEMP_TWIG_DIR
+    xgettext `find -type f -name "*.twig"` \
+        -o $POTFILE \
+        -L PHP \
+        --add-comments=TRANS \
+        --add-location=file \
+        --from-code=UTF-8 \
+        --force-po \
+        --join-existing \
+        --sort-output \
+        --keyword=_n:$F_ARGS_N \
+        --keyword=__:$F_ARGS__ \
+        --keyword=_x:$F_ARGS_X \
+        --keyword=_nx:$F_ARGS_NX
+
+    ## 3. Clean temporary dir
+    cd $SCRIPT_DIR
+    rm -r $TEMP_TWIG_DIR
+fi
+
 # Append locales from PHP
-xgettext `(cd $WORKING_DIR && find -regextype posix-egrep -not -regex $EXCLUDE_REGEX -type f -name "*.php")` \
+cd $WORKING_DIR
+xgettext `find -regextype posix-egrep -not -regex $EXCLUDE_REGEX -type f -name "*.php"` \
     -o $POTFILE \
     -L PHP \
     --add-comments=TRANS \
@@ -95,7 +127,8 @@ xgettext `(cd $WORKING_DIR && find -regextype posix-egrep -not -regex $EXCLUDE_R
     --keyword=_sn:$F_ARGS_SN
 
 # Append locales from JavaScript
-xgettext `(cd $WORKING_DIR && find -regextype posix-egrep -not -regex $EXCLUDE_REGEX -type f -name "*.js" -not -name "*.min.js")` \
+cd $WORKING_DIR
+xgettext `find -regextype posix-egrep -not -regex $EXCLUDE_REGEX -type f -name "*.js" -not -name "*.min.js"` \
     -o $POTFILE \
     -L JavaScript \
     --add-comments=TRANS \
@@ -113,27 +146,6 @@ xgettext `(cd $WORKING_DIR && find -regextype posix-egrep -not -regex $EXCLUDE_R
     --keyword=i18n.ngettext:$F_ARGS_N \
     --keyword=i18n.gettext:$F_ARGS__ \
     --keyword=i18n.pgettext:$F_ARGS_X
-
-# Append locales from Twig templates
-for file in $(cd $WORKING_DIR && find -regextype posix-egrep -not -regex $EXCLUDE_REGEX -type f -name "*.twig")
-do
-    # 1. Convert file content to replace "{{ function(.*) }}" by "<?php function(.*); ?>" and extract strings via std input
-    # 2. Replace "standard input:line_no" by file location in po file comments
-    contents=`cat $file | sed -r "s|\{\{\s*([a-z0-9_]+\(.*\))\s*\}\}|<?php \1; ?>|gi"`
-    cat $file | perl -0pe "s/\{\{(.*?)\}\}/<?php \1; ?>/gism" | xgettext - \
-        -o $POTFILE \
-        -L PHP \
-        --add-comments=TRANS \
-        --from-code=UTF-8 \
-        --force-po \
-        --join-existing \
-        --sort-output \
-        --keyword=_n:$F_ARGS_N \
-        --keyword=__:$F_ARGS__ \
-        --keyword=_x:$F_ARGS_X \
-        --keyword=_nx:$F_ARGS_NX
-    sed -i -r "s|standard input:([0-9]+)|`echo $file | sed "s|./||"`:\1|g" $POTFILE
-done
 
 # Update main language
 LANG=C msginit --no-translator -i $POTFILE -l en_GB -o $WORKING_DIR/locales/en_GB.po
