@@ -160,6 +160,9 @@ class CompileTwigTemplatesCommand extends Command
 
             public function getFunction(string $name): ?TwigFunction
             {
+                // If not found by parent, return a function that has its own name as callback
+                // so Twig will generate code following this pattern: `$name($parameter, ...)`,
+                // e.g. `__('str')` or `_n('str', 'strs', 5)`.
                 return parent::getFunction($name) ?? new TwigFunction($name, $name);
             }
 
