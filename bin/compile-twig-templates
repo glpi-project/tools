@@ -1,0 +1,13 @@
+#!/usr/bin/env php
+<?php
+require __DIR__.'/../../../autoload.php';
+
+use Glpi\Tools\CompileTwigTemplatesCommand;
+use Symfony\Component\Console\Application;
+
+$command = new CompileTwigTemplatesCommand();
+
+$application = new Application($command->getName());
+$application->add($command);
+$application->setDefaultCommand($command->getName(), true);
+$application->run();
