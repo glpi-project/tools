@@ -12,6 +12,7 @@ fi
 
 # plugin-release requires tags to be fetched.
 # TODO Fix this !
+git config --global --add safe.directory $(pwd)
 git fetch --tags
 
 # --assume-yes  Prevent interactions.
