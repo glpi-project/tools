@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.4.5] - 2022-04-20
+- Prevent unsafe git dir exception on `build-package` action
+
 ## [0.4.4] - 2022-03-10
 - Fix locales extraction from Twig templates
 
