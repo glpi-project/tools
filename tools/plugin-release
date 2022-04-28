@@ -416,7 +416,8 @@ def prepare(rel_name, archive):
 
         p1 = subprocess.Popen(
             composer,
-            cwd=build_dir
+            cwd=build_dir,
+            shell=True
         )
         p1.communicate()
 
@@ -445,7 +446,8 @@ def prepare(rel_name, archive):
 
         p2 = subprocess.Popen(
             ['composer', 'dump-autoload', '-o', '--no-dev'],
-            cwd=build_dir
+            cwd=build_dir,
+            shell=True
         )
         p2.communicate()
 
@@ -457,7 +459,8 @@ def prepare(rel_name, archive):
 
         p = subprocess.Popen(
             npm,
-            cwd=build_dir
+            cwd=build_dir,
+            shell=True
         )
         p.communicate()
 
@@ -492,7 +495,8 @@ def compile_mo(build_dir):
                     print('Compiling %s...' % file)
                 p1 = subprocess.Popen(
                     ['msgfmt', file, '-o', file.replace('.po', '.mo')],
-                    cwd=locales_dir
+                    cwd=locales_dir,
+                    shell=True
                 )
                 p1.communicate()
 
