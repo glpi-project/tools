@@ -393,6 +393,17 @@ def create_gh_release(archive, gh_id, plugin_name, ver):
     #print r.json()
     #r.raise_for_status()
 
+def cmd_exists(cmd):
+    try:
+        subprocess.check_call(cmd, 
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return True
+    except subprocess.CalledProcessError as e:
+        return False
+    except OSError as e:
+        return False
+
+
 def prepare(rel_name, archive):
     """
     Add external libraries to the archive, if any
@@ -409,15 +420,22 @@ def prepare(rel_name, archive):
 
     print('Adding vendor libraries')
     if os.path.exists(os.path.join(build_dir, 'composer.json')):
-        composer = ['composer', 'install', '-o', '--no-dev']
+
+        composer_cmd = 'composer'
+        if os.name=='nt':
+            if not cmd_exists([composer_cmd, '--version']):
+                composer_cmd = 'composer.bat'
+        if not cmd_exists([composer_cmd, '--version']):
+            print_err('composer not found!')
+            sys.exit(1)
+        
+        composer = [composer_cmd, 'install', '-o', '--no-dev']
 
         if not verbose:
             composer.insert(-1, '-q')
-
         p1 = subprocess.Popen(
             composer,
-            cwd=build_dir,
-            shell=True
+            cwd=build_dir
         )
         p1.communicate()
 
@@ -445,9 +463,8 @@ def prepare(rel_name, archive):
                 os.remove(remove_file)
 
         p2 = subprocess.Popen(
-            ['composer', 'dump-autoload', '-o', '--no-dev'],
-            cwd=build_dir,
-            shell=True
+            [composer_cmd, 'dump-autoload', '-o', '--no-dev'],
+            cwd=build_dir
         )
         p2.communicate()
 
@@ -456,11 +473,13 @@ def prepare(rel_name, archive):
 
     if os.path.exists(os.path.join(build_dir, 'package.json')):
         npm = ['npm', 'install']
+        if not cmd_exists(['npm', '--version']):
+            print_err('npm not found!')
+            sys.exit(1)
 
         p = subprocess.Popen(
             npm,
-            cwd=build_dir,
-            shell=True
+            cwd=build_dir
         )
         p.communicate()
 
@@ -493,10 +512,12 @@ def compile_mo(build_dir):
             if file.endswith('.po'):
                 if verbose:
                     print('Compiling %s...' % file)
+                if not cmd_exists(['msgfmt', '--version']):
+                    print_err('msgfmt not found!')
+                    sys.exit(1)
                 p1 = subprocess.Popen(
                     ['msgfmt', file, '-o', file.replace('.po', '.mo')],
-                    cwd=locales_dir,
-                    shell=True
+                    cwd=locales_dir
                 )
                 p1.communicate()
 
