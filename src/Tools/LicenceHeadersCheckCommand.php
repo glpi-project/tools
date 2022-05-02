@@ -592,7 +592,6 @@ class LicenceHeadersCheckCommand extends Command {
          '\.travis.yml', // Travis config
          '\.tx', // Transifex config
 
-         'lib', // Manually included libs
          'node_modules', // npm imported libs
          'vendor', // composer imported libs
 
@@ -604,6 +603,7 @@ class LicenceHeadersCheckCommand extends Command {
          $excluded_elements = array_merge(
             $excluded_elements,
             [
+                'lib', // Manually included libs
                 'dist', // Plugin archives
             ]
          );
@@ -615,6 +615,7 @@ class LicenceHeadersCheckCommand extends Command {
             [
                'config',
                'css\/lib',
+               'lib\/(?!(bundles|index\.php)).+', // Manually included libs, but do not exclude "bundles" subdir or "index.php"
                'files',
                'marketplace',
                'plugins',
