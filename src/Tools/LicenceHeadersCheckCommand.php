@@ -265,8 +265,10 @@ class LicenceHeadersCheckCommand extends Command {
             if (!empty($pre_header_lines)) {
                $file_contents .= implode('', $pre_header_lines) . "\n";
             }
-            $file_contents .= implode('', $updated_header_lines) . "\n";
-            $file_contents .= implode('', $post_header_lines);
+            $file_contents .= implode('', $updated_header_lines);
+            if (!empty($post_header_lines)) {
+               $file_contents .= "\n" . implode('', $post_header_lines);
+            }
 
             if (strlen($file_contents) !== file_put_contents($filename, $file_contents)) {
                $output->writeln(
