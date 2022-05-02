@@ -383,10 +383,16 @@ class LicenceHeadersCheckCommand extends Command {
             if ($this->exclusion_pattern !== null && preg_match($this->exclusion_pattern, $this->getRealPath())) {
                return false;
             }
-            if ($this->isFile() && !preg_match('/^(css|js|php|pl|scss|sh|sql|twig|ya?ml)$/', $this->getExtension())) {
-               return false;
+            if ($this->isDir()) {
+               return true; // parse subdirectories
             }
-            return true;
+            if (preg_match('/^(css|js|php|pl|scss|sh|sql|twig|ya?ml)$/', $this->getExtension())) {
+               return true; // handled extensions
+            }
+            if (basename($this->getPath()) === 'bin') {
+               return true; // executable
+            }
+            return false;
          }
 
          public function getChildren(): ?RecursiveFilterIterator {
