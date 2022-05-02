@@ -102,6 +102,13 @@ class LicenceHeadersCheckCommand extends Command {
          InputOption::VALUE_NONE,
          'Fix missing and outdated headers'
       );
+
+      $this->addOption(
+         'discard-extra-tags',
+         null,
+         InputOption::VALUE_NONE,
+         'Discard extra tags found in headers'
+      );
    }
 
    protected function execute(InputInterface $input, OutputInterface $output) {
@@ -218,11 +225,16 @@ class LicenceHeadersCheckCommand extends Command {
             }
          }
 
+         $preserved_tagged_data = $input->getOption('discard-extra-tags')
+            ? []
+            : $this->extractTaggedData($current_header_lines, $header_line_prefix);
+
          $updated_header_lines = $this->getLicenceHeaderLines(
             $input->getOption('header-file'),
             $header_line_prefix,
             $header_prepend_line,
-            $header_append_line
+            $header_append_line,
+            $preserved_tagged_data
          );
 
          $header_outdated = array_slice($updated_header_lines, 1, -1) !== array_slice($current_header_lines, 1, -1);
@@ -310,6 +322,7 @@ class LicenceHeadersCheckCommand extends Command {
     * @param string $line_prefix
     * @param string $prepend_line
     * @param string $append_line
+    * @param array  $extra_tagged_data
     *
     * @return array
     */
@@ -317,7 +330,8 @@ class LicenceHeadersCheckCommand extends Command {
       string $header_file_path,
       string $line_prefix,
       string $prepend_line,
-      string $append_line
+      string $append_line,
+      array $extra_tagged_data = []
    ): array {
       if ($this->header_lines === null) {
          if (($lines = file($header_file_path)) === false) {
@@ -332,6 +346,8 @@ class LicenceHeadersCheckCommand extends Command {
          $lines[] = (preg_match('/^\s+$/', $line) ? rtrim($line_prefix) : $line_prefix) . $line;
       }
       $lines[] = $append_line;
+
+      $lines = $this->appendTaggedData($lines, $extra_tagged_data, $line_prefix);
 
       return $this->stripEmptyLines($lines, true, true);
    }
@@ -466,6 +482,98 @@ class LicenceHeadersCheckCommand extends Command {
       }
 
       return $lines;
+   }
+
+   /**
+    * Extract tagged data from header lines.
+    *
+    * @param array $lines
+    * @param string|null $line_prefix
+    *
+    * @return array
+    */
+   private function extractTaggedData(array $lines, ?string $line_prefix = null): array {
+
+      $tagged_data = [];
+
+      $tag_pattern = $this->getTagPattern($line_prefix);
+
+      foreach ($lines as $line) {
+         $tag = null;
+         if (preg_match($tag_pattern, $line, $tag)) {
+            $tag_name = $tag['name'];
+            $tag_value = $tag['value'];
+
+            if (!array_key_exists($tag_name, $tagged_data)) {
+               $tagged_data[$tag_name] = [];
+            }
+            $tagged_data[$tag_name][] = $tag_value;
+         }
+      }
+
+      return $tagged_data;
+   }
+
+   /**
+    * Append tagged data to header lines.
+    *
+    * @param array $lines
+    * @param array $data_to_append
+    * @param string|null $line_prefix
+    *
+    * @return array
+    */
+   private function appendTaggedData(array $lines, array $data_to_append, ?string $line_prefix = null): array {
+
+      $existing_data = $this->extractTaggedData($lines, $line_prefix);
+
+      if (count($existing_data) === 0) {
+         $existing_tag_lines_nums = [];
+         $append_line_num = count($lines); // There is no tag in given lines, append new tags to the end.
+      } else {
+         $data_to_append = array_merge_recursive($existing_data, $data_to_append);
+         $data_to_append = array_map('array_unique', $data_to_append);
+         ksort($data_to_append);
+
+         $existing_tag_lines_nums = array_keys(preg_grep($this->getTagPattern($line_prefix), $lines));
+         $append_line_num = $existing_tag_lines_nums[0];
+      }
+
+      // Drop existing tag lines and re-append merged tagged data entirely
+      $result_lines = [];
+      foreach ($lines as $num => $line) {
+         if (!in_array($num, $existing_tag_lines_nums)) {
+            $result_lines[] = $line; // Line is ot a tag line, keep it.
+         }
+         if ($num === $append_line_num) {
+            // Append entire tag data
+            $pad = max(array_map('strlen', array_keys($data_to_append)));
+            foreach ($data_to_append as $tag_name => $tag_values) {
+               foreach ($tag_values as $tag_value) {
+                  $result_lines[] = $line_prefix . sprintf('@%s %s', str_pad($tag_name, $pad), $tag_value) . "\n";
+               }
+            }
+         }
+      }
+
+      return $result_lines;
+   }
+
+   /**
+    * Get regex pattern used to detect/extract tagged data.
+    *
+    * @param string $line_prefix
+    *
+    * @return string
+    */
+   private function getTagPattern(?string $line_prefix = null): string {
+      return '/^'
+         . ($line_prefix !== null ? '(?:' . preg_quote($line_prefix, '/') .')?' : '') // may be prefixed by line prefix
+         . '\s*' // may be prefixed by whitespace
+         . '@(?<name>[a-z]+)' // @tagname
+         . '\s+' // space between tag and value
+         . '(?<value>.+)' // value
+         . '$/i';
    }
 
    /**
