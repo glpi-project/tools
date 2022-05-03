@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.5.0] - 2022-05-03
+- Add ability to preserve tagged data in license headers
+- Drop old locales extraction script
+- Exit gracefully if external tools not found in plugin release script
+- Fix composer handling on Windows env in plugin release script
+- Fix handling of `bin/*` files in license headers checks
+- Prevent too many empty lines creation in license headers fix
+
 ## [0.4.5] - 2022-04-20
 - Prevent unsafe git dir exception on `build-package` action
 
