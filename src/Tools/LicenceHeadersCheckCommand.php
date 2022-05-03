@@ -131,11 +131,44 @@ class LicenceHeadersCheckCommand extends Command {
             OutputInterface::VERBOSITY_VERY_VERBOSE
          );
 
+         if (($file_lines = file($filename)) === false) {
+            throw new \Exception(sprintf('Unable to read file.', $filename));
+         }
+
          $header_start_pattern   = null;
          $header_end_pattern     = null;
          $header_content_pattern = null;
 
-         switch (pathinfo($filename, PATHINFO_EXTENSION)) {
+         $extension = pathinfo($filename, PATHINFO_EXTENSION);
+         if ($extension === '') {
+             // No extension, file is probably a binary.
+             // Try to compute extension from shebang.
+             $first_line = $file_lines[0];
+             if (preg_match('/^#!/', $first_line)) {
+                $shebang_matches = [];
+                if (
+                   // `#!/usr/bin/env php [options]` format
+                   preg_match('/^#!\/usr\/bin\/env\s+(?<binary>[^\s]+)(\s+.*)?$/', $first_line, $shebang_matches)
+                   // `#!/bin/bash [options]` format
+                   || preg_match('/^#!(.{0}|\/([^\/]+\/)*(?<binary>[^\/\s]+))(\s+.*)?$/', $first_line, $shebang_matches)
+                ) {
+                   $binary = $shebang_matches['binary'];
+                   switch ($shebang_matches['binary']) {
+                      case 'bash':
+                         $extension = 'sh';
+                         break;
+                      case 'perl':
+                         $extension = 'pl';
+                         break;
+                      case 'php':
+                      default:
+                         $extension = $binary;
+                         break;
+                   }
+                }
+             }
+         }
+         switch ($extension) {
             case 'pl':
             case 'sh':
             case 'yaml':
@@ -188,10 +221,6 @@ class LicenceHeadersCheckCommand extends Command {
          $pre_header_lines     = [];
          $current_header_lines = [];
          $post_header_lines    = [];
-
-         if (($file_lines = file($filename)) === false) {
-            throw new \Exception(sprintf('Unable to read file.', $filename));
-         }
 
          foreach ($file_lines as $line) {
             if (!$header_found && !$header_missing) {
