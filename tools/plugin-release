@@ -1,5 +1,35 @@
 #!/usr/bin/python
-# Adapted from Galette release script
+#
+# ---------------------------------------------------------------------
+#
+# GLPI tools
+#
+# @copyright 2017-2022 Teclib' and contributors.
+# @copyright 2012-2017 The Galette Team
+# @licence   https://www.gnu.org/licenses/gpl-3.0.html
+# @link      https://github.com/glpi-project/tools
+#
+# ---------------------------------------------------------------------
+#
+# LICENSE
+#
+# This file is part of GLPI tools.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+# ---------------------------------------------------------------------
+#
 
 import os, sys, argparse, re, git, subprocess
 import tarfile, shutil, gitdb, time, json, fnmatch
@@ -393,6 +423,16 @@ def create_gh_release(archive, gh_id, plugin_name, ver):
     #print r.json()
     #r.raise_for_status()
 
+def cmd_exists(cmd):
+    try:
+        subprocess.check_call(cmd, 
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return True
+    except subprocess.CalledProcessError as e:
+        return False
+    except OSError as e:
+        return False
+
 def prepare(rel_name, archive):
     """
     Add external libraries to the archive, if any
@@ -409,7 +449,14 @@ def prepare(rel_name, archive):
 
     print('Adding vendor libraries')
     if os.path.exists(os.path.join(build_dir, 'composer.json')):
-        composer = ['composer', 'install', '-o', '--no-dev']
+        composer_cmd = 'composer'
+        if not cmd_exists([composer_cmd, '--version']):
+            composer_cmd = 'composer.bat'
+            if not cmd_exists([composer_cmd, '--version']):
+                print_err('composer not found!')
+                sys.exit(1)
+
+        composer = [composer_cmd, 'install', '-o', '--no-dev']
 
         if not verbose:
             composer.insert(-1, '-q')
@@ -444,7 +491,7 @@ def prepare(rel_name, archive):
                 os.remove(remove_file)
 
         p2 = subprocess.Popen(
-            ['composer', 'dump-autoload', '-o', '--no-dev'],
+            [composer_cmd, 'dump-autoload', '-o', '--no-dev'],
             cwd=build_dir
         )
         p2.communicate()
@@ -453,6 +500,10 @@ def prepare(rel_name, archive):
             os.remove(os.path.join(build_dir, 'composer.lock'))
 
     if os.path.exists(os.path.join(build_dir, 'package.json')):
+        if not cmd_exists(['npm', '--version']):
+            print_err('npm not found!')
+            sys.exit(1)
+
         npm = ['npm', 'install']
 
         p = subprocess.Popen(
@@ -490,6 +541,9 @@ def compile_mo(build_dir):
             if file.endswith('.po'):
                 if verbose:
                     print('Compiling %s...' % file)
+                if not cmd_exists(['msgfmt', '--version']):
+                    print_err('msgfmt not found!')
+                    sys.exit(1)
                 p1 = subprocess.Popen(
                     ['msgfmt', file, '-o', file.replace('.po', '.mo')],
                     cwd=locales_dir

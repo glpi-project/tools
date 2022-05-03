@@ -1,32 +1,33 @@
 <?php
+
 /**
  * ---------------------------------------------------------------------
- * GLPI - Gestionnaire Libre de Parc Informatique
- * Copyright (C) 2015-2021 Teclib' and contributors.
  *
- * http://glpi-project.org
+ * GLPI tools
  *
- * based on GLPI - Gestionnaire Libre de Parc Informatique
- * Copyright (C) 2003-2014 by the INDEPNET Development Team.
+ * @copyright 2017-2022 Teclib' and contributors.
+ * @licence   https://www.gnu.org/licenses/gpl-3.0.html
+ * @link      https://github.com/glpi-project/tools
  *
  * ---------------------------------------------------------------------
  *
  * LICENSE
  *
- * This file is part of GLPI.
+ * This file is part of GLPI tools.
  *
- * GLPI is free software; you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * GLPI is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GLPI. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
  * ---------------------------------------------------------------------
  */
 
@@ -102,6 +103,13 @@ class LicenceHeadersCheckCommand extends Command {
          InputOption::VALUE_NONE,
          'Fix missing and outdated headers'
       );
+
+      $this->addOption(
+         'discard-extra-tags',
+         null,
+         InputOption::VALUE_NONE,
+         'Discard extra tags found in headers'
+      );
    }
 
    protected function execute(InputInterface $input, OutputInterface $output) {
@@ -124,11 +132,44 @@ class LicenceHeadersCheckCommand extends Command {
             OutputInterface::VERBOSITY_VERY_VERBOSE
          );
 
+         if (($file_lines = file($filename)) === false) {
+            throw new \Exception(sprintf('Unable to read file.', $filename));
+         }
+
          $header_start_pattern   = null;
          $header_end_pattern     = null;
          $header_content_pattern = null;
 
-         switch (pathinfo($filename, PATHINFO_EXTENSION)) {
+         $extension = pathinfo($filename, PATHINFO_EXTENSION);
+         if ($extension === '') {
+             // No extension, file is probably a binary.
+             // Try to compute extension from shebang.
+             $first_line = $file_lines[0];
+             if (preg_match('/^#!/', $first_line)) {
+                $shebang_matches = [];
+                if (
+                   // `#!/usr/bin/env php [options]` format
+                   preg_match('/^#!\/usr\/bin\/env\s+(?<binary>[^\s]+)(\s+.*)?$/', $first_line, $shebang_matches)
+                   // `#!/bin/bash [options]` format
+                   || preg_match('/^#!(.{0}|\/([^\/]+\/)*(?<binary>[^\/\s]+))(\s+.*)?$/', $first_line, $shebang_matches)
+                ) {
+                   $binary = $shebang_matches['binary'];
+                   switch ($shebang_matches['binary']) {
+                      case 'bash':
+                         $extension = 'sh';
+                         break;
+                      case 'perl':
+                         $extension = 'pl';
+                         break;
+                      case 'php':
+                      default:
+                         $extension = $binary;
+                         break;
+                   }
+                }
+             }
+         }
+         switch ($extension) {
             case 'pl':
             case 'sh':
             case 'yaml':
@@ -182,10 +223,6 @@ class LicenceHeadersCheckCommand extends Command {
          $current_header_lines = [];
          $post_header_lines    = [];
 
-         if (($file_lines = file($filename)) === false) {
-            throw new \Exception(sprintf('Unable to read file.', $filename));
-         }
-
          foreach ($file_lines as $line) {
             if (!$header_found && !$header_missing) {
                if (preg_match($header_start_pattern, $line)) {
@@ -218,11 +255,16 @@ class LicenceHeadersCheckCommand extends Command {
             }
          }
 
+         $preserved_tagged_data = $input->getOption('discard-extra-tags')
+            ? []
+            : $this->extractTaggedData($current_header_lines, $header_line_prefix);
+
          $updated_header_lines = $this->getLicenceHeaderLines(
             $input->getOption('header-file'),
             $header_line_prefix,
             $header_prepend_line,
-            $header_append_line
+            $header_append_line,
+            $preserved_tagged_data
          );
 
          $header_outdated = array_slice($updated_header_lines, 1, -1) !== array_slice($current_header_lines, 1, -1);
@@ -253,8 +295,10 @@ class LicenceHeadersCheckCommand extends Command {
             if (!empty($pre_header_lines)) {
                $file_contents .= implode('', $pre_header_lines) . "\n";
             }
-            $file_contents .= implode('', $updated_header_lines) . "\n";
-            $file_contents .= implode('', $post_header_lines);
+            $file_contents .= implode('', $updated_header_lines);
+            if (!empty($post_header_lines)) {
+               $file_contents .= "\n" . implode('', $post_header_lines);
+            }
 
             if (strlen($file_contents) !== file_put_contents($filename, $file_contents)) {
                $output->writeln(
@@ -310,6 +354,7 @@ class LicenceHeadersCheckCommand extends Command {
     * @param string $line_prefix
     * @param string $prepend_line
     * @param string $append_line
+    * @param array  $extra_tagged_data
     *
     * @return array
     */
@@ -317,7 +362,8 @@ class LicenceHeadersCheckCommand extends Command {
       string $header_file_path,
       string $line_prefix,
       string $prepend_line,
-      string $append_line
+      string $append_line,
+      array $extra_tagged_data = []
    ): array {
       if ($this->header_lines === null) {
          if (($lines = file($header_file_path)) === false) {
@@ -332,6 +378,8 @@ class LicenceHeadersCheckCommand extends Command {
          $lines[] = (preg_match('/^\s+$/', $line) ? rtrim($line_prefix) : $line_prefix) . $line;
       }
       $lines[] = $append_line;
+
+      $lines = $this->appendTaggedData($lines, $extra_tagged_data, $line_prefix);
 
       return $this->stripEmptyLines($lines, true, true);
    }
@@ -367,10 +415,16 @@ class LicenceHeadersCheckCommand extends Command {
             if ($this->exclusion_pattern !== null && preg_match($this->exclusion_pattern, $this->getRealPath())) {
                return false;
             }
-            if ($this->isFile() && !preg_match('/^(css|js|php|pl|scss|sh|sql|twig|ya?ml)$/', $this->getExtension())) {
-               return false;
+            if ($this->isDir()) {
+               return true; // parse subdirectories
             }
-            return true;
+            if (preg_match('/^(css|js|php|pl|scss|sh|sql|twig|ya?ml)$/', $this->getExtension())) {
+               return true; // handled extensions
+            }
+            if (basename($this->getPath()) === 'bin') {
+               return true; // executable
+            }
+            return false;
          }
 
          public function getChildren(): ?RecursiveFilterIterator {
@@ -469,6 +523,98 @@ class LicenceHeadersCheckCommand extends Command {
    }
 
    /**
+    * Extract tagged data from header lines.
+    *
+    * @param array $lines
+    * @param string|null $line_prefix
+    *
+    * @return array
+    */
+   private function extractTaggedData(array $lines, ?string $line_prefix = null): array {
+
+      $tagged_data = [];
+
+      $tag_pattern = $this->getTagPattern($line_prefix);
+
+      foreach ($lines as $line) {
+         $tag = null;
+         if (preg_match($tag_pattern, $line, $tag)) {
+            $tag_name = $tag['name'];
+            $tag_value = $tag['value'];
+
+            if (!array_key_exists($tag_name, $tagged_data)) {
+               $tagged_data[$tag_name] = [];
+            }
+            $tagged_data[$tag_name][] = $tag_value;
+         }
+      }
+
+      return $tagged_data;
+   }
+
+   /**
+    * Append tagged data to header lines.
+    *
+    * @param array $lines
+    * @param array $data_to_append
+    * @param string|null $line_prefix
+    *
+    * @return array
+    */
+   private function appendTaggedData(array $lines, array $data_to_append, ?string $line_prefix = null): array {
+
+      $existing_data = $this->extractTaggedData($lines, $line_prefix);
+
+      if (count($existing_data) === 0) {
+         $existing_tag_lines_nums = [];
+         $append_line_num = count($lines); // There is no tag in given lines, append new tags to the end.
+      } else {
+         $data_to_append = array_merge_recursive($existing_data, $data_to_append);
+         $data_to_append = array_map('array_unique', $data_to_append);
+         ksort($data_to_append);
+
+         $existing_tag_lines_nums = array_keys(preg_grep($this->getTagPattern($line_prefix), $lines));
+         $append_line_num = $existing_tag_lines_nums[0];
+      }
+
+      // Drop existing tag lines and re-append merged tagged data entirely
+      $result_lines = [];
+      foreach ($lines as $num => $line) {
+         if (!in_array($num, $existing_tag_lines_nums)) {
+            $result_lines[] = $line; // Line is ot a tag line, keep it.
+         }
+         if ($num === $append_line_num) {
+            // Append entire tag data
+            $pad = max(array_map('strlen', array_keys($data_to_append)));
+            foreach ($data_to_append as $tag_name => $tag_values) {
+               foreach ($tag_values as $tag_value) {
+                  $result_lines[] = $line_prefix . sprintf('@%s %s', str_pad($tag_name, $pad), $tag_value) . "\n";
+               }
+            }
+         }
+      }
+
+      return $result_lines;
+   }
+
+   /**
+    * Get regex pattern used to detect/extract tagged data.
+    *
+    * @param string $line_prefix
+    *
+    * @return string
+    */
+   private function getTagPattern(?string $line_prefix = null): string {
+      return '/^'
+         . ($line_prefix !== null ? '(?:' . preg_quote($line_prefix, '/') .')?' : '') // may be prefixed by line prefix
+         . '\s*' // may be prefixed by whitespace
+         . '@(?<name>[a-z]+)' // @tagname
+         . '\s+' // space between tag and value
+         . '(?<value>.+)' // value
+         . '$/i';
+   }
+
+   /**
     * Get files exclusion pattern. All files matching this pattern will be excluded from checks.
     *
     * @param string $directory
@@ -484,7 +630,6 @@ class LicenceHeadersCheckCommand extends Command {
          '\.travis.yml', // Travis config
          '\.tx', // Transifex config
 
-         'lib', // Manually included libs
          'node_modules', // npm imported libs
          'vendor', // composer imported libs
 
@@ -496,6 +641,7 @@ class LicenceHeadersCheckCommand extends Command {
          $excluded_elements = array_merge(
             $excluded_elements,
             [
+                'lib', // Manually included libs
                 'dist', // Plugin archives
             ]
          );
@@ -507,6 +653,7 @@ class LicenceHeadersCheckCommand extends Command {
             [
                'config',
                'css\/lib',
+               'lib\/(?!(bundles|index\.php)).+', // Manually included libs, but do not exclude "bundles" subdir or "index.php"
                'files',
                'marketplace',
                'plugins',
