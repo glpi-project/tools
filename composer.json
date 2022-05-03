@@ -22,7 +22,6 @@
     "bin" : [
       "bin/extract-locales",
       "bin/licence-headers-check",
-      "tools/extract_template.sh",
       "tools/plugin-release"
     ],
     "require": {
