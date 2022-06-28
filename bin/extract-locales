@@ -53,7 +53,7 @@ F_ARGS_SN="1,2"
 if [ -f "$WORKING_DIR/setup.php" ]; then
     # setup.php found: it's a plugin.
     NAME="$(grep -m1 "PLUGIN_.*_VERSION" $WORKING_DIR/setup.php | cut -d _ -f 2)"
-    EXCLUDE_REGEX="^.\/(\..*|(libs?|node_modules|tests|vendor)\/).*"
+    EXCLUDE_REGEX="^.\/\(\..*\|\(libs?\|node_modules\|tests\|vendor\)\/\).*"
 
     # Only strings with domain specified are extracted (use Xt args of keyword param to set number of args needed)
     F_ARGS_N="$F_ARGS_N,4t"
@@ -66,7 +66,7 @@ if [ -f "$WORKING_DIR/setup.php" ]; then
 else
     # using core most probably
     NAME="GLPI"
-    EXCLUDE_REGEX="^.\/(\..*|(config|files|lib|marketplace|node_modules|plugins|public|tests|tools|vendor)\/).*"
+    EXCLUDE_REGEX="^.\/\(\..*\|\(config\|files\|lib\|marketplace\|node_modules\|plugins\|public\|tests\|tools\|vendor\)\/\).*"
 fi;
 POTFILE="$WORKING_DIR/locales/${NAME,,}.pot"
 
@@ -110,7 +110,7 @@ fi
 
 # Append locales from PHP
 cd $WORKING_DIR
-xgettext `find -regextype posix-egrep -not -regex $EXCLUDE_REGEX -type f -name "*.php"` \
+xgettext `find -not -regex $EXCLUDE_REGEX -type f -name "*.php"` \
     -o $POTFILE \
     -L PHP \
     --add-comments=TRANS \
@@ -128,7 +128,7 @@ xgettext `find -regextype posix-egrep -not -regex $EXCLUDE_REGEX -type f -name "
 
 # Append locales from JavaScript
 cd $WORKING_DIR
-xgettext `find -regextype posix-egrep -not -regex $EXCLUDE_REGEX -type f -name "*.js" -not -name "*.min.js"` \
+xgettext `find -not -regex $EXCLUDE_REGEX -type f -name "*.js" -not -name "*.min.js"` \
     -o $POTFILE \
     -L JavaScript \
     --add-comments=TRANS \
