@@ -1,5 +1,36 @@
 #!/bin/sh
 
+#
+# ---------------------------------------------------------------------
+#
+# GLPI tools
+#
+# @copyright 2017-2022 Teclib' and contributors.
+# @licence   https://www.gnu.org/licenses/gpl-3.0.html
+# @link      https://github.com/glpi-project/tools
+#
+# ---------------------------------------------------------------------
+#
+# LICENSE
+#
+# This file is part of GLPI tools.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+# ---------------------------------------------------------------------
+#
+
 composer install --no-progress --no-suggest --no-interaction --prefer-dist
 
 # Check that "plugin-release" script is fetched with project dependencies.
@@ -12,6 +43,7 @@ fi
 
 # plugin-release requires tags to be fetched.
 # TODO Fix this !
+git config --global --add safe.directory $(pwd)
 git fetch --tags
 
 # --assume-yes  Prevent interactions.

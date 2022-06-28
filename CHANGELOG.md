@@ -4,6 +4,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.5.1] - 2022-06-28
+- Fix locales extraction on `alpine` context
+
+## [0.5.0] - 2022-05-03
+- Add ability to preserve tagged data in license headers
+- Drop old locales extraction script
+- Exit gracefully if external tools not found in plugin release script
+- Fix composer handling on Windows env in plugin release script
+- Fix handling of `bin/*` files in license headers checks
+- Prevent too many empty lines creation in license headers fix
+
+## [0.4.5] - 2022-04-20
+- Prevent unsafe git dir exception on `build-package` action
+
+## [0.4.4] - 2022-03-10
+- Fix locales extraction from Twig templates
+
+## [0.4.3] - 2022-03-09
+- Fix locales extraction when installed using Composer 2+
+
+## [0.4.2] - 2022-01-28
+- Fix licence header ending detection
+
+## [0.4.1] - 2021-12-20
+- Improve locales extraction
+- Improve headers checks
+- Fix PSR-12 compliance
+
+## [0.4.0] - 2021-11-17
+- Drop `glpi-project/coding-standard` dependency
+- Do not check `.gitlab-ci.yml` in licence-headers-check command
+
+## [0.3.1] - 2021-10-28
+- Handle *.twig files in license headers check command
+- Fix PHP 8.1 compatibility
+
+## [0.3.0] - 2021-10-07
+- Latest coding standards
+
+## [0.2.0] - 2021-09-28
+- Do not check `css/lib` and `tests/config` in licence-headers-check command
+- Handle CSSO preserved comments
+- Remove consolidation/robo task runner
+- Fix "is not" with literal SyntaxWarning
+
 ## [0.1.16] - 2021-03-03
 - Enhance license headers check
 - Enable usage of Robo 3.x, drop usage of Robo 1.x

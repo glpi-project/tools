@@ -20,13 +20,12 @@
       }
     },
     "bin" : [
+      "bin/extract-locales",
       "bin/licence-headers-check",
-      "tools/extract_template.sh",
       "tools/plugin-release"
     ],
     "require": {
-        "consolidation/robo": "^2.0 || ^3.0",
-        "glpi-project/coding-standard": "^0.8",
-        "symfony/console": "^4.4 || ^5.0"
+        "symfony/console": "^4.4 || ^5.0",
+        "twig/twig": "^3.3"
     }
 }

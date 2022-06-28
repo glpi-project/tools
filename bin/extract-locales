@@ -1,0 +1,151 @@
+#!/bin/bash
+
+#
+# ---------------------------------------------------------------------
+#
+# GLPI tools
+#
+# @copyright 2017-2022 Teclib' and contributors.
+# @licence   https://www.gnu.org/licenses/gpl-3.0.html
+# @link      https://github.com/glpi-project/tools
+#
+# ---------------------------------------------------------------------
+#
+# LICENSE
+#
+# This file is part of GLPI tools.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+# ---------------------------------------------------------------------
+#
+
+SCRIPT_DIR=$(dirname $0)
+if [[ "$SCRIPT_DIR" == *"/vendor/glpi-project/tools"* ]]; then
+    # Script is executed from "vendor/glpi-project/tools/bin" directory
+    WORKING_DIR=$(readlink -f "$SCRIPT_DIR/../../../..")
+else
+    # Script is executed from "vendor/bin" directory
+    WORKING_DIR=$(readlink -f "$SCRIPT_DIR/../..")
+fi;
+
+# Define translate function args
+F_ARGS_N="1,2"
+F_ARGS__S="1"
+F_ARGS__="1"
+F_ARGS_X="1c,2"
+F_ARGS_SX="1c,2"
+F_ARGS_NX="1c,2,3"
+F_ARGS_SN="1,2"
+
+# Compute POT filename
+if [ -f "$WORKING_DIR/setup.php" ]; then
+    # setup.php found: it's a plugin.
+    NAME="$(grep -m1 "PLUGIN_.*_VERSION" $WORKING_DIR/setup.php | cut -d _ -f 2)"
+    EXCLUDE_REGEX="^.\/\(\..*\|\(libs?\|node_modules\|tests\|vendor\)\/\).*"
+
+    # Only strings with domain specified are extracted (use Xt args of keyword param to set number of args needed)
+    F_ARGS_N="$F_ARGS_N,4t"
+    F_ARGS__S="$F_ARGS__S,2t"
+    F_ARGS__="$F_ARGS__,2t"
+    F_ARGS_X="$F_ARGS_X,3t"
+    F_ARGS_SX="$F_ARGS_SX,3t"
+    F_ARGS_NX="$F_ARGS_NX,5t"
+    F_ARGS_SN="$F_ARGS_SN,4t"
+else
+    # using core most probably
+    NAME="GLPI"
+    EXCLUDE_REGEX="^.\/\(\..*\|\(config\|files\|lib\|marketplace\|node_modules\|plugins\|public\|tests\|tools\|vendor\)\/\).*"
+fi;
+POTFILE="$WORKING_DIR/locales/${NAME,,}.pot"
+
+if [ ! -d "$WORKING_DIR/locales" ]; then
+    mkdir $WORKING_DIR/locales
+fi
+
+# Clean existing POT file
+rm -f $POTFILE && touch $POTFILE
+
+# Append locales from Twig templates
+# It have to be executed first as the use of `--add-location=file` will remove line numbers
+# from all previous locations, including those which that may be added from PHP/JS files.
+
+if [ -d "$WORKING_DIR/templates" ]; then
+    ## 1. Transform twig files and save them into temp dir
+    TEMP_TWIG_DIR=$(mktemp -d -t glpi-locales-XXXXXXXX)
+    mkdir -p "$TEMP_TWIG_DIR/templates"
+    $SCRIPT_DIR/compile-twig-templates --quiet $WORKING_DIR/templates $TEMP_TWIG_DIR/templates
+
+    ## 2. Extract string from transformed files
+    cd $TEMP_TWIG_DIR
+    xgettext `find -type f -name "*.twig"` \
+        -o $POTFILE \
+        -L PHP \
+        --add-comments=TRANS \
+        --add-location=file \
+        --from-code=UTF-8 \
+        --force-po \
+        --join-existing \
+        --sort-output \
+        --keyword=_n:$F_ARGS_N \
+        --keyword=__:$F_ARGS__ \
+        --keyword=_x:$F_ARGS_X \
+        --keyword=_nx:$F_ARGS_NX
+
+    ## 3. Clean temporary dir
+    cd $SCRIPT_DIR
+    rm -r $TEMP_TWIG_DIR
+fi
+
+# Append locales from PHP
+cd $WORKING_DIR
+xgettext `find -not -regex $EXCLUDE_REGEX -type f -name "*.php"` \
+    -o $POTFILE \
+    -L PHP \
+    --add-comments=TRANS \
+    --from-code=UTF-8 \
+    --force-po \
+    --join-existing \
+    --sort-output \
+    --keyword=_n:$F_ARGS_N \
+    --keyword=__s:$F_ARGS__S \
+    --keyword=__:$F_ARGS__ \
+    --keyword=_x:$F_ARGS_X \
+    --keyword=_sx:$F_ARGS_SX \
+    --keyword=_nx:$F_ARGS_NX \
+    --keyword=_sn:$F_ARGS_SN
+
+# Append locales from JavaScript
+cd $WORKING_DIR
+xgettext `find -not -regex $EXCLUDE_REGEX -type f -name "*.js" -not -name "*.min.js"` \
+    -o $POTFILE \
+    -L JavaScript \
+    --add-comments=TRANS \
+    --from-code=UTF-8 \
+    --force-po \
+    --join-existing \
+    --sort-output \
+    --keyword=_n:$F_ARGS_N \
+    --keyword=__:$F_ARGS__ \
+    --keyword=_x:$F_ARGS_X \
+    --keyword=_nx:$F_ARGS_NX \
+    --keyword=i18n._n:$F_ARGS_N \
+    --keyword=i18n.__:$F_ARGS__ \
+    --keyword=i18n._p:$F_ARGS_X \
+    --keyword=i18n.ngettext:$F_ARGS_N \
+    --keyword=i18n.gettext:$F_ARGS__ \
+    --keyword=i18n.pgettext:$F_ARGS_X
+
+# Update main language
+LANG=C msginit --no-translator -i $POTFILE -l en_GB -o $WORKING_DIR/locales/en_GB.po

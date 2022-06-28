@@ -34,10 +34,10 @@
 
 require __DIR__.'/../../../autoload.php';
 
-use Glpi\Tools\LicenceHeadersCheckCommand;
+use Glpi\Tools\CompileTwigTemplatesCommand;
 use Symfony\Component\Console\Application;
 
-$command = new LicenceHeadersCheckCommand();
+$command = new CompileTwigTemplatesCommand();
 
 $application = new Application($command->getName());
 $application->add($command);
