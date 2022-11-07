@@ -87,8 +87,8 @@ class LicenceHeadersCheckCommand extends Command {
 
       $header_file = null;
       if ($project_dir !== null) {
-          $path = implode([$project_dir, '.licence-header'], DIRECTORY_SEPARATOR);
-          $legacy_path = implode([$project_dir, 'tools', 'HEADER'], DIRECTORY_SEPARATOR);
+          $path = implode(DIRECTORY_SEPARATOR, [$project_dir, '.licence-header']);
+          $legacy_path = implode(DIRECTORY_SEPARATOR, [$project_dir, 'tools', 'HEADER']);
           if (file_exists($path)) {
               $header_file = realpath($path);
           } elseif (file_exists($legacy_path)) {
