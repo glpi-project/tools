@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.6.1] - 2022-11-07
+- Fix licence headers check command on PHP 8.x.
+
 ## [0.6.0] - 2022-11-07
 - Accept `.licence-header` as source file for licence headers.
 - Allow usage of `symfony/console` 6.x.
