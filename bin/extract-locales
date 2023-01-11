@@ -89,19 +89,22 @@ if [ -d "$WORKING_DIR/templates" ]; then
 
     ## 2. Extract string from transformed files
     cd $TEMP_TWIG_DIR
-    xgettext `find -type f -name "*.twig"` \
-        -o $POTFILE \
-        -L PHP \
-        --add-comments=TRANS \
-        --add-location=file \
-        --from-code=UTF-8 \
-        --force-po \
-        --join-existing \
-        --sort-output \
-        --keyword=_n:$F_ARGS_N \
-        --keyword=__:$F_ARGS__ \
-        --keyword=_x:$F_ARGS_X \
-        --keyword=_nx:$F_ARGS_NX
+    TWIG_FILES=`find -type f -name "*.twig"`
+    if [ ! -z "$TWIG_FILES" ]; then
+        xgettext $TWIG_FILES \
+            -o $POTFILE \
+            -L PHP \
+            --add-comments=TRANS \
+            --add-location=file \
+            --from-code=UTF-8 \
+            --force-po \
+            --join-existing \
+            --sort-output \
+            --keyword=_n:$F_ARGS_N \
+            --keyword=__:$F_ARGS__ \
+            --keyword=_x:$F_ARGS_X \
+            --keyword=_nx:$F_ARGS_NX
+    fi
 
     ## 3. Clean temporary dir
     cd $SCRIPT_DIR
@@ -110,42 +113,48 @@ fi
 
 # Append locales from PHP
 cd $WORKING_DIR
-xgettext `find -not -regex $EXCLUDE_REGEX -type f -name "*.php"` \
-    -o $POTFILE \
-    -L PHP \
-    --add-comments=TRANS \
-    --from-code=UTF-8 \
-    --force-po \
-    --join-existing \
-    --sort-output \
-    --keyword=_n:$F_ARGS_N \
-    --keyword=__s:$F_ARGS__S \
-    --keyword=__:$F_ARGS__ \
-    --keyword=_x:$F_ARGS_X \
-    --keyword=_sx:$F_ARGS_SX \
-    --keyword=_nx:$F_ARGS_NX \
-    --keyword=_sn:$F_ARGS_SN
+PHP_FILES=`find -not -regex $EXCLUDE_REGEX -type f -name "*.php"`
+if [ ! -z "$PHP_FILES" ]; then
+    xgettext $PHP_FILES \
+        -o $POTFILE \
+        -L PHP \
+        --add-comments=TRANS \
+        --from-code=UTF-8 \
+        --force-po \
+        --join-existing \
+        --sort-output \
+        --keyword=_n:$F_ARGS_N \
+        --keyword=__s:$F_ARGS__S \
+        --keyword=__:$F_ARGS__ \
+        --keyword=_x:$F_ARGS_X \
+        --keyword=_sx:$F_ARGS_SX \
+        --keyword=_nx:$F_ARGS_NX \
+        --keyword=_sn:$F_ARGS_SN
+fi
 
 # Append locales from JavaScript
 cd $WORKING_DIR
-xgettext `find -not -regex $EXCLUDE_REGEX -type f -name "*.js" -not -name "*.min.js"` \
-    -o $POTFILE \
-    -L JavaScript \
-    --add-comments=TRANS \
-    --from-code=UTF-8 \
-    --force-po \
-    --join-existing \
-    --sort-output \
-    --keyword=_n:$F_ARGS_N \
-    --keyword=__:$F_ARGS__ \
-    --keyword=_x:$F_ARGS_X \
-    --keyword=_nx:$F_ARGS_NX \
-    --keyword=i18n._n:$F_ARGS_N \
-    --keyword=i18n.__:$F_ARGS__ \
-    --keyword=i18n._p:$F_ARGS_X \
-    --keyword=i18n.ngettext:$F_ARGS_N \
-    --keyword=i18n.gettext:$F_ARGS__ \
-    --keyword=i18n.pgettext:$F_ARGS_X
+JS_FILES=`find -not -regex $EXCLUDE_REGEX -type f -name "*.js" -not -name "*.min.js"`
+if [ ! -z "$JS_FILES" ]; then
+    xgettext $JS_FILES \
+        -o $POTFILE \
+        -L JavaScript \
+        --add-comments=TRANS \
+        --from-code=UTF-8 \
+        --force-po \
+        --join-existing \
+        --sort-output \
+        --keyword=_n:$F_ARGS_N \
+        --keyword=__:$F_ARGS__ \
+        --keyword=_x:$F_ARGS_X \
+        --keyword=_nx:$F_ARGS_NX \
+        --keyword=i18n._n:$F_ARGS_N \
+        --keyword=i18n.__:$F_ARGS__ \
+        --keyword=i18n._p:$F_ARGS_X \
+        --keyword=i18n.ngettext:$F_ARGS_N \
+        --keyword=i18n.gettext:$F_ARGS__ \
+        --keyword=i18n.pgettext:$F_ARGS_X
+fi
 
 # Update main language
 LANG=C msginit --no-translator -i $POTFILE -l en_GB -o $WORKING_DIR/locales/en_GB.po
