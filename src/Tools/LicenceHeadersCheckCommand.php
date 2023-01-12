@@ -584,6 +584,14 @@ class LicenceHeadersCheckCommand extends Command {
          $append_line_num = $existing_tag_lines_nums[0];
       }
 
+      // Deduplicate tagged data
+      foreach ($data_to_append as $tag_name => $tag_values) {
+         if (preg_match('/^copy(right|left)$/', $tag_name) !== 1) {
+            continue;
+         }
+         $data_to_append[$tag_name] = $this->unduplicateCopyTag($tag_values);
+      }
+
       // Drop existing tag lines and re-append merged tagged data entirely
       $result_lines = [];
       foreach ($lines as $num => $line) {
@@ -619,6 +627,72 @@ class LicenceHeadersCheckCommand extends Command {
          . '\s+' // space between tag and value
          . '(?<value>.+)' // value
          . '$/i';
+   }
+
+   /**
+    * Unduplicate copyright/copyleft tags values.
+    *
+    * @param array $values
+    *
+    * @return array
+    */
+   private function unduplicateCopyTag(array $values): array {
+      $copy_dates_pattern = '/^'
+         . '(?<before>.+\s+)?' // capture everything before dates
+         . '(?<starting_date>\d{4})' // mandatory date (unique year or starting year)
+         . '(-(?<ending_date>\d{4}))?' // optionnal ending date with `-` separator
+         . '(?<after>\s+.+)?' // capture everything after dates
+         . '$/';
+
+      $preserved_values = [];
+
+      foreach ($values as $value) {
+         $dates_matches = [];
+         if (preg_match($copy_dates_pattern, $value, $dates_matches) !== 1) {
+            continue;
+         }
+
+         $similar_pattern = '/^'
+            . preg_quote(trim($dates_matches['before'] ?? ''), '/')
+            . '\s+(?<starting_date>\d{4})(-(?<ending_date>\d{4}))?\s+'
+            . preg_quote(trim($dates_matches['after'] ?? ''), '/')
+            . '$/';
+
+         if (count(preg_grep($similar_pattern, $preserved_values)) > 0) {
+            // similar value already computed
+            continue;
+         }
+
+         $similar_values = preg_grep($similar_pattern, $values);
+
+         if (count($similar_values) === 1) {
+            // found only current value, no need to deduplicate
+            $preserved_values[] = $value;
+            continue;
+         }
+
+         // Compute min starting and max ending dates
+         $starting_date = $dates_matches['starting_date'];
+         $ending_date   = !empty($dates_matches['ending_date']) ? $dates_matches['ending_date'] : $starting_date;
+         foreach ($similar_values as $similar_value) {
+            $similar_dates_matches = [];
+            preg_match($copy_dates_pattern, $similar_value, $similar_dates_matches);
+            if ($similar_dates_matches['starting_date'] < $starting_date) {
+               $starting_date = $similar_dates_matches['starting_date'];
+            } elseif ($similar_dates_matches['starting_date'] > $ending_date) {
+               $ending_date = $similar_dates_matches['starting_date'];
+            }
+            if (!empty($similar_dates_matches['ending_date']) && $similar_dates_matches['ending_date'] > $ending_date) {
+                $ending_date = $similar_dates_matches['ending_date'];
+            }
+         }
+         $preserved_values[] = ($dates_matches['before'] ?? '')
+            . $starting_date
+            . ($ending_date !== $starting_date ? '-' . $ending_date : '')
+            . ($dates_matches['after'] ?? '');
+      }
+
+      return $preserved_values;
    }
 
    /**
