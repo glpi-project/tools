@@ -704,12 +704,7 @@ class LicenceHeadersCheckCommand extends Command {
     */
    protected function getExclusionPattern(string $directory): ?string {
       $excluded_elements = [
-         '\.dependabot', // Dependabot config
-         '\.git',
-         '\.github', // Github specific files
-         '\.gitlab-ci.yml', // Gitlab config
-         '\.travis.yml', // Travis config
-         '\.tx', // Transifex config
+         '(\.|.*\/\.).+', // Any hidden file/directory
 
          'node_modules', // npm imported libs
          'vendor', // composer imported libs
