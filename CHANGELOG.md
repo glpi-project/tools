@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.6.3] - 2023-07-07
+- Exclude all hidden files from license headers checks.
+
 ## [0.6.2] - 2023-01-12
 - Prevent locale extract from failing when some files types are not existing.
 - Fix handling of copyright dates updates.
