@@ -212,7 +212,7 @@ class LicenceHeadersCheckCommand extends Command {
                $header_line_prefix     = ' * ';
                $header_prepend_line    = "/**\n";
                $header_append_line     = " */\n";
-               $header_start_pattern   = '/^\/\*\*?$/';
+               $header_start_pattern   = '/^\/\*(\!|\*)?$/'; // accept "/*", "/**" and "/*!"
                $header_end_pattern     = '/\*\//';
                break;
          }
