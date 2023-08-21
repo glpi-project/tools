@@ -26,6 +26,7 @@
     ],
     "require": {
         "symfony/console": "^5.4 || ^6.0",
-        "twig/twig": "^3.3"
+        "twig/twig": "^3.3",
+        "twig/cache-extra": "^3.7"
     }
 }

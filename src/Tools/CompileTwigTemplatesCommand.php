@@ -39,6 +39,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Twig\Environment;
+use Twig\Extra\Cache\CacheExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
@@ -158,7 +159,7 @@ class CompileTwigTemplatesCommand extends Command
      */
     private function getMockedTwigEnvironment(LoaderInterface $loader): Environment
     {
-        return new class ($loader) extends Environment {
+        $env = new class ($loader) extends Environment {
 
             public function getFunction(string $name): ?TwigFunction
             {
@@ -184,6 +185,10 @@ class CompileTwigTemplatesCommand extends Command
                 return parent::getTest($name) ?? new TwigTest($name, function () {});
             }
         };
+
+        $env->addExtension(new CacheExtension());
+
+        return $env;
     }
 
     /**
