@@ -156,5 +156,23 @@ if [ ! -z "$JS_FILES" ]; then
         --keyword=i18n.pgettext:$F_ARGS_X
 fi
 
+# Append locales from Markdown lessons
+cd "$WORKING_DIR/lessons"
+md2po --quiet --save --po-filepath ../locales/markdown.pot $(find ./sources -type f -name "*.md")
+
+# Merge markdown.pot into main POT file
+cd $WORKING_DIR/locales
+xgettext $POTFILE markdown.pot -o $POTFILE
+
 # Update main language
 LANG=C msginit --no-translator -i $POTFILE -l en_GB -o $WORKING_DIR/locales/en_GB.po
+
+# Generate markdown files from POT file
+for md_file in $(find $WORKING_DIR/lessons/sources -type f -name "*.md"); do
+    dest="$WORKING_DIR/lessons/translated/en_GB/${md_file/$WORKING_DIR\/lessons\/sources\/}"
+
+    if [ ! -d "$(dirname "$dest")" ]; then
+        mkdir -p "$(dirname "$dest")"
+    fi
+    LANG=C po2md "$md_file" --pofiles "$WORKING_DIR/locales/en_GB.po" --quiet --wrapwidth inf --save "$dest"
+done
