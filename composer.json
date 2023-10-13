@@ -15,14 +15,14 @@
         "issues": "https://github.com/glpi-project/tools/issues"
     },
     "autoload" : {
-      "psr-4" : {
-         "Glpi\\" : "src/"
-      }
+        "psr-4" : {
+            "GlpiProject\\Tools\\" : "src/"
+        }
     },
     "bin" : [
-      "bin/extract-locales",
-      "bin/licence-headers-check",
-      "tools/plugin-release"
+        "bin/extract-locales",
+        "bin/licence-headers-check",
+        "tools/plugin-release"
     ],
     "require": {
         "symfony/console": "^5.4 || ^6.0",

@@ -31,7 +31,7 @@
  * ---------------------------------------------------------------------
  */
 
-namespace Glpi\Tools;
+namespace GlpiProject\Tools;
 
 use RecursiveDirectoryIterator;
 use RecursiveFilterIterator;

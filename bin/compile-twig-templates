@@ -34,7 +34,7 @@
 
 require __DIR__.'/../../../autoload.php';
 
-use Glpi\Tools\CompileTwigTemplatesCommand;
+use GlpiProject\Tools\CompileTwigTemplatesCommand;
 use Symfony\Component\Console\Application;
 
 $command = new CompileTwigTemplatesCommand();
