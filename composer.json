@@ -27,5 +27,9 @@
     "require": {
         "symfony/console": "^5.4 || ^6.0",
         "twig/twig": "^3.3"
+    },
+    "require-dev": {
+        "nikic/php-parser": "^4.13",
+        "phpstan/phpstan-src": "^1.10"
     }
 }
