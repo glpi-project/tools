@@ -31,7 +31,7 @@
  * ---------------------------------------------------------------------
  */
 
-namespace Glpi\Tools\PHPStan\Rules;
+namespace GlpiProject\Tools\PHPStan\Rules;
 
 use PhpParser\Comment\Doc;
 use PhpParser\Node;

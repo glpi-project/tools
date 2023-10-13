@@ -34,7 +34,7 @@
 
 require __DIR__.'/../../../autoload.php';
 
-use Glpi\Tools\LicenceHeadersCheckCommand;
+use GlpiProject\Tools\LicenceHeadersCheckCommand;
 use Symfony\Component\Console\Application;
 
 $command = new LicenceHeadersCheckCommand();
