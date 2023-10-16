@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.7.1] - 2023-10-16
+- Fix default project directory on licence headers check command.
+
 ## [0.7.0] - 2023-10-16
 - Update PHP namespace to prevent conflicts with GLPI core tools.
 - Add a PHPStan rule to ensure that global variable types are defined in PHPDoc.
