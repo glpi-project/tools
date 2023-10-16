@@ -72,7 +72,7 @@ class LicenceHeadersCheckCommand extends Command {
       $this->setName('glpi:tools:licence_headers_check');
       $this->setDescription('Check licence header in code source files.');
 
-      $project_dir = realpath(__DIR__ . str_repeat(DIRECTORY_SEPARATOR . '..', 5));
+      $project_dir = realpath(__DIR__ . str_repeat(DIRECTORY_SEPARATOR . '..', 4));
       if ($project_dir === false || !is_readable($project_dir)) {
          $project_dir = null;
       }
