@@ -53,5 +53,5 @@ git fetch --tags
 vendor/bin/plugin-release --assume-yes --dont-check --nogithub --nosign --release $PLUGIN_VERSION --verbose
 
 # Defines output variables.
-echo "::set-output name=package-basename::$(find dist/ -type f -name '*.tar.bz2' | xargs -n 1 basename)"
-echo "::set-output name=package-path::$(find dist/ -type f -name '*.tar.bz2')"
+echo "package-basename=$(find dist/ -type f -name '*.tar.bz2' | xargs -n 1 basename)" >> $GITHUB_OUTPUT
+echo "package-path=$(find dist/ -type f -name '*.tar.bz2')" >> $GITHUB_OUTPUT
