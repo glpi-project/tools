@@ -134,7 +134,7 @@ fi
 
 # Append locales from JavaScript
 cd $WORKING_DIR
-JS_FILES=`find -not -regex $EXCLUDE_REGEX -type f -name "*.js" -not -name "*.min.js"`
+JS_FILES=`find -not -regex $EXCLUDE_REGEX -type f \( -name "*.js"  -o -name "*.vue" \) -not -name "*.min.js"`
 if [ ! -z "$JS_FILES" ]; then
     xgettext $JS_FILES \
         -o $POTFILE \
