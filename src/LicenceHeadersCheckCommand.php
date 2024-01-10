@@ -652,10 +652,19 @@ class LicenceHeadersCheckCommand extends Command {
             continue;
          }
 
+         $before = trim($dates_matches['before'] ?? '');
+         $before_pattern = strlen($before) > 0
+            ? '\s*' . preg_quote($before, '/') . '\s+'
+            : '';
+         $after = trim($dates_matches['after'] ?? '');
+         $after_pattern = strlen($after) > 0
+            ? '\s+' . preg_quote($after, '/') . '\s*'
+            : '';
+
          $similar_pattern = '/^'
-            . preg_quote(trim($dates_matches['before'] ?? ''), '/')
-            . '\s+(?<starting_date>\d{4})(-(?<ending_date>\d{4}))?\s+'
-            . preg_quote(trim($dates_matches['after'] ?? ''), '/')
+            . $before_pattern
+            . '(?<starting_date>\d{4})(-(?<ending_date>\d{4}))?'
+            . $after_pattern
             . '$/';
 
          if (count(preg_grep($similar_pattern, $preserved_values)) > 0) {
