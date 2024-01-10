@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.7.2] - 2024-01-10
+- Fix copyright unduplicate logic in licence headers check command.
+
 ## [0.7.1] - 2023-10-16
 - Fix default project directory on licence headers check command.
 
