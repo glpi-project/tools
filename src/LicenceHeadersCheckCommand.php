@@ -715,6 +715,8 @@ class LicenceHeadersCheckCommand extends Command {
       $excluded_elements = [
          '(\.|.*\/\.).+', // Any hidden file/directory
 
+         '(docker-)?compose(\.override)?\.ya?ml', // docker compose configuration files
+
          'node_modules', // npm imported libs
          'vendor', // composer imported libs
 
