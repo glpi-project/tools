@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.7.4] - 2024-09-18
+- Fix compatibility with Twig 3.12.
+
 ## [0.7.3] - 2024-06-20
 - Do not check licence headers of docker compose config files.
 
