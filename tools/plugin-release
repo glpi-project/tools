@@ -323,6 +323,7 @@ def _do_build(repo, ver):
                         append = False
                         break
                 if append:
+                    if " " in ls_file: ls_file = "\""+ls_file+"\""
                     paths.append(ls_file)
 
         archive_cmd_pattern = 'git archive --prefix=%s/ %s %s | bzip2 > %s'
