@@ -162,10 +162,13 @@ class CompileTwigTemplatesCommand extends Command
 
             public function getFunction(string $name): ?TwigFunction
             {
-                // If not found by parent, return a function that has its own name as callback
-                // so Twig will generate code following this pattern: `$name($parameter, ...)`,
-                // e.g. `__('str')` or `_n('str', 'strs', 5)`.
-                return parent::getFunction($name) ?? new TwigFunction($name, $name);
+                if (in_array($name, ['__', '_n', '_x', '_nx'], true)) {
+                    // Return a function that has its own name as callback
+                    // for translation functions, so Twig will generate code following this pattern:
+                    // $name($parameter, ...)`, e.g. `__('str')` or `_n('str', 'strs', 5)`.
+                    return new TwigFunction($name, $name);
+                }
+                return parent::getFunction($name) ?? new TwigFunction($name, function () {});
             }
 
             public function getFilter(string $name): ?TwigFilter
