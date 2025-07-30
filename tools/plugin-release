@@ -445,6 +445,8 @@ def prepare(rel_name, archive):
     plugin.extractall(path=src_dir)
     plugin.close()
 
+    os.remove(archive)
+
     build_dir = os.path.join(src_dir, plugin_name)
 
     print('Adding vendor libraries')
@@ -521,7 +523,7 @@ def prepare(rel_name, archive):
 
     compile_mo(build_dir)
 
-    plugin = tarfile.open(archive, 'w|bz2')
+    plugin = tarfile.open(archive, 'w|bz2', format=tarfile.USTAR_FORMAT)
 
     for i in os.listdir(src_dir):
         plugin.add(
