@@ -728,8 +728,9 @@ class LicenceHeadersCheckCommand extends Command {
          $excluded_elements = array_merge(
             $excluded_elements,
             [
-                'lib', // Manually included libs
+                'lib',  // Manually included libs
                 'dist', // Plugin archives
+                'var',  // Lint cache
             ]
          );
       } else if (file_exists($directory . DIRECTORY_SEPARATOR . 'composer.json')
