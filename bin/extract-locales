@@ -66,7 +66,7 @@ if [ -f "$WORKING_DIR/setup.php" ]; then
 else
     # using core most probably
     NAME="GLPI"
-    EXCLUDE_REGEX="^.\/\(\..*\|\(config\|files\|lib\|marketplace\|node_modules\|plugins\|public\|tests\|tools\|vendor\)\/\).*"
+    EXCLUDE_REGEX="^.\/\(\..*\|\(config\|files\|lib\|marketplace\|node_modules\|plugins\|phpunit\|public\|tests\|tools\|vendor\)\/\).*"
 fi;
 POTFILE="$WORKING_DIR/locales/${NAME,,}.pot"
 
