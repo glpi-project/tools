@@ -153,5 +153,29 @@ if [ ! -z "$JS_FILES" ]; then
         --keyword=i18n.pgettext:$F_ARGS_X
 fi
 
+# Append locales from Vue
+VUE_FILES=`find -not -regex $EXCLUDE_REGEX -type f -name "*.vue"`
+if [ ! -z "$VUE_FILES" ]; then
+    cd $WORKING_DIR/vendor/glpi-project/tools
+    npm install
+    npm run vue:gettext:extract
+
+    cd $WORKING_DIR
+    if [ -f locales/vue.pot ]; then
+        echo "merge vue locales"
+
+        # replace ../../.. by nothing in locales/vue.pot
+        sed -e 's#../../../##g' -i locales/vue.pot
+
+        # merge vue pot with existing global pot file
+        xgettext locales/vue.pot $POTFILE -o $POTFILE
+
+        rm locales/vue.pot
+    else
+        echo "no vue locales to merge"
+        exit 1
+    fi
+fi
+
 # Update main language
 LANG=C msginit --no-translator -i $POTFILE -l en_GB -o $WORKING_DIR/locales/en_GB.po

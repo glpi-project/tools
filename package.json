@@ -1,0 +1,12 @@
+{
+  "name": "@glpi-project/tools",
+  "version": "",
+  "description": "A set of tools used in the core GLPI project and also from plugins.",
+  "license": "LGPL-3.0-or-later",
+  "scripts": {
+    "vue:gettext:extract": "vue-gettext-extract"
+  },
+  "dependencies": {
+    "vue3-gettext": "^4.0.0-alpha.8"
+  }
+}
