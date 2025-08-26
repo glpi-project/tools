@@ -168,7 +168,7 @@ if [ ! -z "$VUE_FILES" ]; then
         sed -e 's#../../../##g' -i locales/vue.pot
 
         # merge vue pot with existing global pot file
-        xgettext locales/vue.pot $POTFILE -o $POTFILE
+        xgettext -o $POTFILE --join-existing locales/vue.pot
 
         rm locales/vue.pot
     else
