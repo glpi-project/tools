@@ -37,6 +37,36 @@ require __DIR__.'/../../../autoload.php';
 use GlpiProject\Tools\CompileTwigTemplatesCommand;
 use Symfony\Component\Console\Application;
 
+if (!function_exists('__')) {
+    function __($str, $domain = 'glpi')
+    {
+    }
+
+    function __s($str, $domain = 'glpi')
+    {
+    }
+
+    function _sx($ctx, $str, $domain = 'glpi')
+    {
+    }
+
+    function _n($sing, $plural, $nb, $domain = 'glpi')
+    {
+    }
+
+    function _sn($sing, $plural, $nb, $domain = 'glpi')
+    {
+    }
+
+    function _x($ctx, $str, $domain = 'glpi')
+    {
+    }
+
+    function _nx($ctx, $sing, $plural, $nb, $domain = 'glpi')
+    {
+    }
+}
+
 $command = new CompileTwigTemplatesCommand();
 
 $application = new Application($command->getName());
