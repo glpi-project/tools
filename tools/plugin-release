@@ -64,6 +64,14 @@ banned = [
     '.travis.yml',
     '.circleci/',
     '.ignore-release',
+    '.stylelintrc.js',
+    '.twig_cs.dist.php',
+    '.webpack.config.js',
+    'rector.php',
+    'phpstan.neon',
+    '.phpcs.xml',
+    'phpunit.xml',
+    'phpunit.xml.dist',
 ]
 gh_orga = 'pluginsGLPI'
 script_version = '1.0.5'
@@ -425,7 +433,7 @@ def create_gh_release(archive, gh_id, plugin_name, ver):
 
 def cmd_exists(cmd):
     try:
-        subprocess.check_call(cmd, 
+        subprocess.check_call(cmd,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return True
     except subprocess.CalledProcessError as e:
@@ -517,7 +525,7 @@ def prepare(rel_name, archive):
         # assume that npm install triggers build of required libs on postinstall event (using webpack for instance)
         # node_modules directory should not be packages into plugin
         shutil.rmtree(os.path.join(build_dir, 'node_modules'))
-        
+
         if os.path.exists(os.path.join(build_dir, 'package-lock.json')):
             os.remove(os.path.join(build_dir, 'package-lock.json'))
 
