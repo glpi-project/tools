@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.2] - 2025-10-10
+- Fix tar file long paths
+
 ## [0.8.1] - 2025-09-08
 - Fix locales extract in Twig files for GLPI 11.0
 
