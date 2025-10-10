@@ -523,7 +523,7 @@ def prepare(rel_name, archive):
 
     compile_mo(build_dir)
 
-    plugin = tarfile.open(archive, 'w|bz2', format=tarfile.PAX_FORMAT)
+    plugin = tarfile.open(archive, 'w|bz2', format=tarfile.GNU_FORMAT)
 
     for i in os.listdir(src_dir):
         plugin.add(
