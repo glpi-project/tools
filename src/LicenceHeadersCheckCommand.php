@@ -425,7 +425,7 @@ class LicenceHeadersCheckCommand extends Command {
             if ($this->isDir()) {
                return true; // parse subdirectories
             }
-            if (preg_match('/^(css|js|php|pl|scss|sh|sql|twig|ya?ml)$/', $this->getExtension())) {
+            if (preg_match('/^(css|js|ts|php|pl|scss|sh|sql|twig|ya?ml)$/', $this->getExtension())) {
                return true; // handled extensions
             }
             if (basename($this->getPath()) === 'bin') {
@@ -748,6 +748,8 @@ class LicenceHeadersCheckCommand extends Command {
                'tests\/config',
                'tests\/config_db\.php',
                'tests\/files',
+               'tests\/e2e\/glpi_config',
+               'tests\/e2e\/glpi_files',
             ]
          );
       }
