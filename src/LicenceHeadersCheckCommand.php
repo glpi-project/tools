@@ -744,10 +744,12 @@ class LicenceHeadersCheckCommand extends Command {
                'lib\/(?!(bundles|index\.php)).+', // Manually included libs, but do not exclude "bundles" subdir or "index.php"
                'files',
                'marketplace',
+               'phpunit\/files',
                'plugins',
                'tests\/config',
                'tests\/config_db\.php',
                'tests\/files',
+               'tests\/fixtures',
                'tests\/e2e\/glpi_config',
                'tests\/e2e\/glpi_files',
             ]
